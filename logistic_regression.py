@@ -43,7 +43,7 @@ def reduce_data(train, truth, x, y):
             bool_list.append(True)
         else:
             bool_list.append(False)
-    print("#4's + #8's:", hits)
+    print("#" + str(x) + "'s" + " + #" + str(y) + "'s:", hits)
     reduced_train = np.compress(bool_list, train, axis=0)
     reduced_truth = np.compress(bool_list, truth, axis=0)
     return reduced_train, reduced_truth
