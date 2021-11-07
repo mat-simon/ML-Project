@@ -26,11 +26,15 @@ def main():
     test_fea1, test_gnd1 = util.reduce_data(test_fea1, test_gnd1, 4, 8)
 
     print("shape of new train data:", train_fea1.shape)
-    print("train.rows = ground_truth.rows? :", train_fea1.shape[0] == train_gnd1.shape[0])
+    print("shape of new ground truth:", train_gnd1.shape)
 
     # data values from [0, 255] to [0, 1]
     train_fea1 = np.divide(train_fea1, 255)
     test_fea1 = np.divide(test_fea1, 255)
+
+    train_gnd1_input = np.ravel(train_gnd1)
+    model = LogisticRegression(C=.01, penalty="l2", solver="liblinear", tol=0.1)
+    model.fit(train_fea1, train_gnd1_input)
 
 
 if __name__ == '__main__':
