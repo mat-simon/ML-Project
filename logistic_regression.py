@@ -7,7 +7,6 @@ from sklearn.linear_model import LogisticRegression
 
 def main():
     dictionary_data = scipy.io.loadmat('MNISTmini.mat')
-    print("dictionary keys:", dictionary_data.keys())
 
     train_fea1 = np.array(dictionary_data['train_fea1'])
     print("shape of train_fea1 np array:", train_fea1.shape)
@@ -33,13 +32,11 @@ def main():
     test_fea1 = np.divide(test_fea1, 255)
 
     train_gnd1_input = np.ravel(train_gnd1)
-    for x in range(1)
     model = LogisticRegression(C=.01, penalty="l2", solver="liblinear", tol=0.1)
     model.fit(train_fea1, train_gnd1_input)
 
     score = model.score(test_fea1, test_gnd1)
     print("accuracy on validation set:", score)
-    bestScore = 0
 
 
 if __name__ == '__main__':
