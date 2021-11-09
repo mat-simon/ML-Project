@@ -1,0 +1,18 @@
+C = 0, penalty = l1, solver = liblinear, tol = 0.1
+C = 0, penalty = l2, solver = liblinear, tol = 0.1
+C = 0, penalty = none, solver = liblinear, tol = 0.1
+Skipped penalty type none for model liblinear
+C = 0, penalty = l1, solver = lbfgs, tol = 0.1
+Skipped penalty type l1 for model lbfgs
+C = 0, penalty = l2, solver = lbfgs, tol = 0.1
+C = 0, penalty = none, solver = lbfgs, tol = 0.1
+C = 0, penalty = l1, solver = sag, tol = 0.1
+Skipped penalty type l1 for model sag
+C = 0, penalty = l2, solver = sag, tol = 0.1
+C = 0, penalty = none, solver = sag, tol = 0.1
+C = 0, penalty = l1, solver = saga, tol = 0.1
+C = 0, penalty = l2, solver = saga, tol = 0.1
+C = 0, penalty = none, solver = saga, tol = 0.1
+best accuracy on validation set: 0.9933537832310838
+parameters for best model: C = 11.999999999999973, penalty = l2, solver = sag, tol = 0.1
+
