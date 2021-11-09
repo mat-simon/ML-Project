@@ -44,7 +44,7 @@ def main():
     print("CV test score:", model.score(test_fea1, test_gnd1))
 
     params = {'C': Cs, 'l1_ratio': [.1, .2, .3, .4, .5, .6, .7, .8, .9]}
-    model = GridSearchCV(LogisticRegression(penalty='elasticnet', solver='saga', max_iter=10000, tol=0.00001), params)
+    model = GridSearchCV(LogisticRegression(n_jobs=-1, penalty='elasticnet', solver='saga', max_iter=10000, tol=0.00001), params)
     model.fit(train_fea1, train_gnd1_input)
     print(f"Best saga: {model.best_params_} with acc {model.best_score_}")
     print("CV test score:", model.score(test_fea1, test_gnd1))
