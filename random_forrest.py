@@ -22,8 +22,8 @@ def main():
     # test_fea1, test_gnd1 = util.reduce_data(test_fea1, test_gnd1, 4, 8)
     # num_features = math.log(train_gnd1.shape[0], 2)
 
-    params = {'n_estimators': [x / 1 for x in range(2, 500)],
-              'max_features': [x / 1 for x in range(2, 100)],
+    params = {'n_estimators': [x for x in range(2, 5)],
+              'max_features': [x for x in range(2, 30)],
               'criterion': ['gini', 'entropy']
               }
     model = GridSearchCV(RandomForestClassifier(n_jobs=-1), params)
