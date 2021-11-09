@@ -18,18 +18,19 @@ def main():
 
     # delete rows that are not 4 or 8 (our assigned digits to classify)
     train_fea1, train_gnd1 = util.reduce_data(train_fea1, train_gnd1, 4, 8)
+    test_fea1, test_gnd1 = util.reduce_data(test_fea1, test_gnd1, 4, 8)
 
-    # test_fea1, test_gnd1 = util.reduce_data(test_fea1, test_gnd1, 4, 8)
     # num_features = math.log(train_gnd1.shape[0], 2)
 
-    params = {'n_estimators': [x for x in range(2, 5)],
-              'max_features': [x for x in range(2, 30)],
-              'criterion': ['gini', 'entropy']
+    params = {'n_estimators': [1, 2, 3, 5, 10, 20, 50, 100, 200],
+              'max_features': [x for x in range(2, 25)],
+              # 'criterion': ['gini', 'entropy']
               }
     model = GridSearchCV(RandomForestClassifier(n_jobs=-1), params)
     model.fit(train_fea1, train_gnd1.ravel())
     print(f"Best estimator: {model.best_estimator_})")
     print(f"Accuracy = {model.best_score_}")
+    print("Test score:", model.score(test_fea1, test_gnd1))
 
     # names = list(range(1, 100))
     # print("Features sorted by score:")
