@@ -1,8 +1,8 @@
 import numpy as np
 import scipy.io
 import util
-# import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
+# import matplotlib.pyplot as plt
 # from sklearn.linear_model import LogisticRegressionCV
 # from sklearn.model_selection import GridSearchCV
 # from sklearn.preprocessing import StandardScaler
@@ -38,7 +38,6 @@ def main():
     penalty_arr = ["l2"]
     best_model = ''
     best_acc = 0
-
     for penalty in penalty_arr:
         for i in range(1, 30000):
             c = i / 1000
@@ -48,8 +47,8 @@ def main():
             if accuracy > best_acc:
                 best_model = "C = " + str(c) + ", penalty = " + penalty + ", solver = 'liblinear', tol = 0.0001\n"
                 best_acc = accuracy
-    print("best accuracy on validation set: ", best_acc)
     print("parameters for best model: ", best_model)
+    print("best accuracy on validation set: ", best_acc)
 
     ### preprocessing steps
     # data values from [0, 255] to [0, 1]
@@ -60,25 +59,25 @@ def main():
 if __name__ == '__main__':
     main()
 
-    ### Ignore below, just for learning GridSearchCV
+### Ignore below, just for learning GridSearchCV
 
-    # model = LogisticRegressionCV(Cs=10, n_jobs=-1, penalty='elasticnet', solver='saga', tol=0.001, l1_ratios=[0.0, 0.25, 0.5, 0.75, 1])
-    # model.fit(train_fea1, train_gnd1_input)
+# model = LogisticRegressionCV(Cs=10, n_jobs=-1, penalty='elasticnet', solver='saga', tol=0.001, l1_ratios=[0.0, 0.25, 0.5, 0.75, 1])
+# model.fit(train_fea1, train_gnd1_input)
 
-    # Cs = [x / 1 for x in range(1, 500)]
-    # Cs = [.00000001, .0000001, .000001, .00001, .0001, .001,  .01, .1, 1, 10, 100, 1000, 10000]
-    #
-    # params = {'C': Cs}
-    # model = GridSearchCV(LogisticRegression(penalty='l2', solver='liblinear', max_iter=500, tol=0.00001), params)
-    # model.fit(train_fea1, train_gnd1_input)
-    # print(f"Best liblinear estimator: {model.best_estimator_})")
-    # print(f"Best liblinear: {model.best_params_} with acc {model.best_score_}")
-    # print("CV test score:", model.score(test_fea1, test_gnd1))
-    #
-    # params = {'C': Cs, 'l1_ratio': [.1, .2, .3, .4, .5, .6, .7, .8, .9]}
-    # model = GridSearchCV(LogisticRegression(n_jobs=-1, penalty='elasticnet', solver='saga', max_iter=10000, tol=0.00001), params)
-    # model.fit(train_fea1, train_gnd1_input)
-    # print(f"Best saga: {model.best_params_} with acc {model.best_score_}")
-    # print("CV test score:", model.score(test_fea1, test_gnd1))
+# Cs = [x / 1 for x in range(1, 500)]
+# Cs = [.00000001, .0000001, .000001, .00001, .0001, .001,  .01, .1, 1, 10, 100, 1000, 10000]
+#
+# params = {'C': Cs}
+# model = GridSearchCV(LogisticRegression(penalty='l2', solver='liblinear', max_iter=500, tol=0.00001), params)
+# model.fit(train_fea1, train_gnd1_input)
+# print(f"Best liblinear estimator: {model.best_estimator_})")
+# print(f"Best liblinear: {model.best_params_} with acc {model.best_score_}")
+# print("CV test score:", model.score(test_fea1, test_gnd1))
+#
+# params = {'C': Cs, 'l1_ratio': [.1, .2, .3, .4, .5, .6, .7, .8, .9]}
+# model = GridSearchCV(LogisticRegression(n_jobs=-1, penalty='elasticnet', solver='saga', max_iter=10000, tol=0.00001), params)
+# model.fit(train_fea1, train_gnd1_input)
+# print(f"Best saga: {model.best_params_} with acc {model.best_score_}")
+# print("CV test score:", model.score(test_fea1, test_gnd1))
 
-    # print('Max auc_roc:', model.scores_[8].mean(axis=0).max()) # best avg score across folds for LogRegCV()
+# print('Max auc_roc:', model.scores_[8].mean(axis=0).max()) # best avg score across folds for LogRegCV()

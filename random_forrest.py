@@ -2,11 +2,10 @@ import numpy as np
 import scipy.io
 import util
 import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.model_selection import GridSearchCV
+# from sklearn.model_selection import GridSearchCV
 
 
 def graph_acc_trees(train, truth, test, test_truth):
@@ -57,10 +56,10 @@ def prune_tree(train, truth):
     return ccp_alphas[-1]
 
 
-def feature_importance(train, truth):
+def feature_importance(train_X, train_Y):
     print("Feature importance for every pixel:")
     sel = SelectFromModel(RandomForestClassifier(n_estimators=100))
-    sel.fit(train, truth)
+    sel.fit(train_X, train_Y)
     np_fi = np.array(sel.get_support())
     print(np_fi.reshape(10, 10))
     return sel
@@ -76,23 +75,20 @@ def train_model(train_X, train_Y, validation_X, validation_Y):
     :param validation_Y: array of ground truth values for validation_X
     :return: trained model
     """
-    n_estimators_arr = [1, 2, 3, 5, 10]
+    n_estimators_arr = [1, 2, 3, 5, 10, 100, 200]
+    max_features = [x for x in range(1, 90)]
     best_model = ''
     best_acc = 0
-    for n in n_estimators_arr:
-        clf = RandomForestClassifier(n_estimators=n, n_jobs=-1)
-        clf.fit(train_X, train_Y)
-        accuracy = clf.score(validation_X, validation_Y)
-        if accuracy > best_acc:
-            best_model = "# trees = " + str(n) + "\n"
-            best_acc = accuracy
-    print("best accuracy on validation set: ", best_acc)
+    for max_fea in max_features:
+        for n in n_estimators_arr:
+            clf = RandomForestClassifier(n_estimators=n, max_features=max_fea, n_jobs=-1)
+            clf.fit(train_X, train_Y)
+            accuracy = clf.score(validation_X, validation_Y)
+            if accuracy > best_acc:
+                best_model = "n_estimators = " + str(n) + ", max_features = " + str(max_fea)
+                best_acc = accuracy
     print("parameters for best model: ", best_model)
-
-
-    result = clf.score(validation_X, validation_Y)
-    print("best validation score: ", result)
-
+    print("best accuracy on validation set: ", best_acc)
     return clf
 
 
@@ -108,24 +104,20 @@ def get_data():
     except Exception as e:
         print(e)
 
-    print("Reducing data to 8s and 4s...")
+    print("Reducing train data to first 1000 rows of 4s and 8s...")
+    print("Reducing validation data to second 1000 rows of 4s and 8s...")
     try:
         train_fea1, train_gnd1 = util.reduce_data(train_fea1, train_gnd1, 4, 8)
         test_fea1, test_gnd1 = util.reduce_data(test_fea1, test_gnd1, 4, 8)
-        print("success")
-    except Exception as e:
-        print(e)
-    print("Only take first 1000 rows of 4s and 8s for train and validation sets...")
-    try:
         # 4's: [0-999], 8's: [5842-6841]
         train_X = train_fea1[np.r_[0:1000, 5842:6842], :]
         train_Y = train_gnd1[np.r_[0:1000, 5842:6842], :]
         validation_X = train_fea1[np.r_[1000:2000, 6842:7842], :]
         validation_Y = train_gnd1[np.r_[1000:2000, 6842:7842], :]
+        print("success\n")
     except Exception as e:
         print(e)
-
-    return train_X, train_Y.ravel(), validation_X, validation_Y, test_fea1, test_gnd1.ravel()
+    return train_X, train_Y.ravel(), validation_X, validation_Y, test_fea1, test_gnd1
 
 
 def feature_heatmap(model):
@@ -137,10 +129,9 @@ def feature_heatmap(model):
     fig.savefig('heatmap2.png')
 
 def main():
-
-    train_X, train_Y, validation_X, validation_Y, test, test_truth = get_data()
-    # feature_importance(train, truth)
-    clf = train_model(train_X, train_Y, test, test_truth)
+    train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = get_data()
+    clf = train_model(train_X, train_Y, validation_X, validation_Y)
+    # feature_importance(train_X, train_Y)
     # feature_heatmap(clf)
 
 
