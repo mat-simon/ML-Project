@@ -66,21 +66,32 @@ def feature_importance(train, truth):
     return sel
 
 
-def train_model(train, truth, test, test_truth):
+def train_model(train_X, train_Y, validation_X, validation_Y):
     """
-    Trains a single model using the RandomForestClassifier and prints score
-    result
+    Trains a single model using the RandomForestClassifier and prints validation score and model
     Modify hyperparameters for best accuracy
-    :param train: numpy array with the MNIST image data for training
-    :param truth: array of 8s and 4s true values for training data
-    :param test: numpy array with the MNIST image data for testing
-    :param test_truth: array of 8s and 4s true values for test data
+    :param train_X: numpy array with the MNIST image data for training
+    :param train_Y: array of ground truth values for train_X
+    :param validation_X: numpy array with the MNIST image data for validation
+    :param validation_Y: array of ground truth values for validation_X
     :return: trained model
     """
-    clf = RandomForestClassifier(n_estimators=100, n_jobs=-1)
-    clf.fit(train, truth)
-    result = clf.score(test, test_truth)
-    print("Score: ", result)
+    n_estimators_arr = [1, 2, 3, 5, 10]
+    best_model = ''
+    best_acc = 0
+    for n in n_estimators_arr:
+        clf = RandomForestClassifier(n_estimators=n, n_jobs=-1)
+        clf.fit(train_X, train_Y)
+        accuracy = clf.score(validation_X, validation_Y)
+        if accuracy > best_acc:
+            best_model = "# trees = " + str(n) + "\n"
+            best_acc = accuracy
+    print("best accuracy on validation set: ", best_acc)
+    print("parameters for best model: ", best_model)
+
+
+    result = clf.score(validation_X, validation_Y)
+    print("best validation score: ", result)
 
     return clf
 
@@ -104,8 +115,17 @@ def get_data():
         print("success")
     except Exception as e:
         print(e)
+    print("Only take first 1000 rows of 4s and 8s for train and validation sets...")
+    try:
+        # 4's: [0-999], 8's: [5842-6841]
+        train_X = train_fea1[np.r_[0:1000, 5842:6842], :]
+        train_Y = train_gnd1[np.r_[0:1000, 5842:6842], :]
+        validation_X = train_fea1[np.r_[1000:2000, 6842:7842], :]
+        validation_Y = train_gnd1[np.r_[1000:2000, 6842:7842], :]
+    except Exception as e:
+        print(e)
 
-    return train_fea1, train_gnd1.ravel(), test_fea1, test_gnd1.ravel()
+    return train_X, train_Y.ravel(), validation_X, validation_Y, test_fea1, test_gnd1.ravel()
 
 
 def feature_heatmap(model):
@@ -118,22 +138,24 @@ def feature_heatmap(model):
 
 def main():
 
-    train, truth, test, test_truth = get_data()
+    train_X, train_Y, validation_X, validation_Y, test, test_truth = get_data()
     # feature_importance(train, truth)
-    clf = train_model(train, truth, test, test_truth)
+    clf = train_model(train_X, train_Y, test, test_truth)
     # feature_heatmap(clf)
-
-    params = {'n_estimators': [1, 2, 3, 5, 10, 20, 50, 100, 200],
-              'max_features': [x for x in range(2, 25)],
-              # 'criterion': ['gini', 'entropy']
-              }
-
-    model = GridSearchCV(RandomForestClassifier(n_jobs=-1), params)
-    model.fit(train, truth)
-    print(f"Best estimator: {model.best_estimator_})")
-    print(f"Accuracy = {model.best_score_}")
-    print("Test score:", model.score(test, test_truth))
 
 
 if __name__ == '__main__':
     main()
+
+### Ignore below, just for learning GridSearchCV
+
+# params = {'n_estimators': [x for x in range(200, 500)],
+    #           'max_features': [x for x in range(2, 33)],
+    #           # 'criterion': ['gini', 'entropy']
+    #           }
+    #
+    # model = GridSearchCV(RandomForestClassifier(n_jobs=-1), params)
+    # model.fit(train_X, train_Y)
+    # print(f"Best estimator: {model.best_estimator_})")
+    # print(f"Accuracy = {model.best_score_}")
+    # print("Test score:", model.score(test, test_truth))
