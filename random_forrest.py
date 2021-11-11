@@ -10,21 +10,21 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
     clfs = []
-    num_trees = list(range(1, 501))
+    num_trees = list(range(1, 201))
 
     for i in num_trees:
         clf = RandomForestClassifier(n_estimators=i, n_jobs=-1)
         clf.fit(train_X, train_Y)
         clfs.append(clf)
     train_scores = [1 - clf.score(train_X, train_Y) for clf in clfs]
-    test_scores = [1 - clf.score(validation_X, validation_Y) for clf in clfs]
+    validation_scores = [1 - clf.score(validation_X, validation_Y) for clf in clfs]
     fig, ax = plt.subplots()
     ax.set_xlabel("Number of trees")
     ax.set_ylabel("Error")
-    ax.set_title("Error vs number of trees for training and testing sets")
+    ax.set_title("Error vs number of trees for training and validation sets")
     ax.plot(num_trees, train_scores, label="train",
             drawstyle="steps-post")
-    ax.plot(num_trees, test_scores, label="test",
+    ax.plot(num_trees, validation_scores, label="validation",
             drawstyle="steps-post")
     ax.legend()
     fig.savefig("error_trees2.png")
@@ -67,28 +67,28 @@ def feature_importance(train_X, train_Y):
 
 def train_model(train_X, train_Y, validation_X, validation_Y):
     """
-    Trains a single model using the RandomForestClassifier and prints validation score and model
+    Trains models using the RandomForestClassifier and prints validation scores and models
     Modify hyperparameters for best accuracy
     :param train_X: numpy array with the MNIST image data for training
-    :param train_Y: array of ground truth values for train_X
+    :param train_Y: array of ground truth values for training
     :param validation_X: numpy array with the MNIST image data for validation
-    :param validation_Y: array of ground truth values for validation_X
+    :param validation_Y: array of ground truth values for validation
     :return: trained model
     """
-    n_estimators_arr = [x for x in range(10, 300, 10)]
-    max_features = [10, 20, 30, 40, 50, 100]
-    max_depth = [x for x in range(1, 10)]
+    n_estimators_arr = [x for x in range(5, 50, 10)]
+    max_features = [10]     # ['sqrt', 'log2']
+    max_depth = [x for x in range(1, 50)]
     best_model = ''
     best_acc = 0
     acc_dict = {}
     for n in n_estimators_arr:
         for max_fea in max_features:
             for depth in max_depth:
-                print("n:", n, "max_fea:", max_fea, "depth:", depth)
+                # print("n:", n, "max_fea:", max_fea, "depth:", depth)
                 clf = RandomForestClassifier(n_estimators=n, max_features=max_fea, n_jobs=-1, max_depth=depth)
                 clf.fit(train_X, train_Y)
                 accuracy = clf.score(validation_X, validation_Y)
-                acc_dict[accuracy] = ['n:', n, 'max_fea:', max_fea, 'depth:', depth]
+                acc_dict[accuracy] = [f'n = {n}', f'max_fea = {max_fea}', f'depth = {depth}']
                 if accuracy > best_acc:
                     best_model = "n_estimators = " + str(n) + ", max_features = " + str(max_fea) + ", max depth = " + str(depth)
                     best_acc = accuracy

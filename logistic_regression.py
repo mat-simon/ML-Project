@@ -29,7 +29,7 @@ def main():
     validation_Y = train_gnd1[np.r_[1000:2000, 6842:7842], :]
 
     print("shape of train set:", train_X.shape)
-    print("shape of validation set:", validation_X.shape)
+    print("shape of validation set:", validation_X.shape, "\n")
 
     #     # data values from [0, 255] to [0, 1]
     #     #train_fea1 = np.divide(train_fea1, 255)
@@ -45,7 +45,7 @@ def main():
             model.fit(train_X, train_Y.ravel())
             accuracy = model.score(validation_X, validation_Y)
             if accuracy > best_acc:
-                best_model = "C = " + str(c) + ", penalty = " + penalty + ", solver = 'liblinear', tol = 0.0001\n"
+                best_model = "C = " + str(c) + ", penalty = " + penalty + ", solver = 'liblinear', tol = 0.0001"
                 best_acc = accuracy
     print("parameters for best model: ", best_model)
     print("best accuracy on validation set: ", best_acc)
