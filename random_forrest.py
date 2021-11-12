@@ -11,9 +11,9 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 
 def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
-    # Fix depth, graph number of trees vs accuracy
+    # Fix depth and max_features, graph number of trees vs accuracy
     clfs = []
-    num_trees = list(range(1, 5001, 50))
+    num_trees = list(range(1, 501, 5))
     for i in num_trees:
         clf = RandomForestClassifier(n_estimators=i, n_jobs=-1)
         clf.fit(train_X, train_Y)
@@ -23,44 +23,67 @@ def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
     fig, ax = plt.subplots()
     ax.set_xlabel("Number of trees")
     ax.set_ylabel("Accuracy %")
-    ax.set_title("Number of trees vs Accuracy")
+    ax.set_title("N trees vs Accuracy, fix max_features='log2', depth=None")
     ax.plot(num_trees, train_scores, label="train", marker='o', markersize=2)
     ax.plot(num_trees, validation_scores, label="validation", marker='o', markersize=2)
     ax.legend()
     fig.savefig("accuracy_trees.png")
     plt.show()
 
-
-def prune_tree(train, truth):
-    print("Pruning Tree - Finding best alpha...")
-    clf = DecisionTreeClassifier(random_state=0)
-    path = clf.cost_complexity_pruning_path(train, truth)
-    ccp_alphas, impurities = path.ccp_alphas, path.impurities
-    fig, ax = plt.subplots()
-    ax.plot(ccp_alphas[:-1], impurities[:-1], #marker="o",
-            drawstyle="steps-post")
-    ax.set_xlabel("effective alpha")
-    ax.set_ylabel("total impurity of leaves")
-    ax.set_title("Total Impurity vs effective alpha for training set")
-    fig.savefig("example1.png")
-
+def graph_acc_features(train_X, train_Y, validation_X, validation_Y):
     clfs = []
-    for ccp_alpha in ccp_alphas:
-        clf = DecisionTreeClassifier(random_state=0, ccp_alpha=ccp_alpha)
-        clf.fit(train, truth)
+    max_features = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    best_acc = [0, 0]
+    for i in max_features:
+        clf = RandomForestClassifier(n_estimators=3, max_features=i, n_jobs=-1)
+        clf.fit(train_X, train_Y)
         clfs.append(clf)
-    print(
-        "Number of nodes in the last tree is: {} with ccp_alpha: {}".format(
-            clfs[-1].tree_.node_count, ccp_alphas[-1]
-        )
-    )
-    return ccp_alphas[-1]
+        score = clf.score(validation_X, validation_Y) * 100
+        if best_acc[1] < score:
+            best_acc[0] = i
+            best_acc[1] = score
+    train_scores = [clf.score(train_X, train_Y) * 100 for clf in clfs]
+    validation_scores = [clf.score(validation_X, validation_Y) * 100 for clf in clfs]
+    fig, ax = plt.subplots()
+    ax.set_xlabel("Max features")
+    ax.set_ylabel("Accuracy %")
+    ax.set_title("Max Features vs Accuracy, fix n_estimators=3, max_depth=None")
+    ax.plot(max_features, train_scores, label="train", marker='o')
+    ax.plot(max_features, validation_scores, label="validation", marker='o')
+    high_score = round(best_acc[1], 2)
+    plt.annotate(str(high_score), (best_acc[0], best_acc[1]))
+    ax.legend()
+    fig.savefig("accuracy_features.png")
+    plt.show()
+
+def graph_acc_depth(train_X, train_Y, validation_X, validation_Y):
+    clfs = []
+    num_depth = list(range(1, 100))
+    best_acc = [0, 0]
+    for i in num_depth:
+        clf = RandomForestClassifier(n_estimators=3, max_features='log2', max_depth=i, n_jobs=-1)
+        clf.fit(train_X, train_Y)
+        clfs.append(clf)
+        score = clf.score(validation_X, validation_Y)*100
+        if best_acc[1] < score:
+            best_acc[0] = i
+            best_acc[1] = score
+    train_scores = [clf.score(train_X, train_Y)*100 for clf in clfs]
+    validation_scores = [clf.score(validation_X, validation_Y)*100 for clf in clfs]
+    fig, ax = plt.subplots()
+    ax.set_xlabel("Max depth")
+    ax.set_ylabel("Accuracy %")
+    ax.set_title("Max Depth vs Accuracy")
+    ax.plot(num_depth, train_scores, label="train", marker='o', markersize=2)
+    ax.plot(num_depth, validation_scores, label="validation", marker='o', markersize=2)
+    ax.legend()
+    plt.annotate(str(best_acc[1]), (best_acc[0], best_acc[1]))
+    fig.savefig("accuracy_depth.png")
+    plt.show()
 
 
 def feature_importance(model):
-    print("Feature importance for every pixel:")
     fi = np.array(SelectFromModel(model).get_support())
-    print(fi.reshape(10, 10))
     return model
 
 
@@ -142,8 +165,10 @@ def feature_heatmap(model):
 def main():
     train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = get_data()
     # model = train_model(train_X, train_Y, validation_X, validation_Y)
-    graph_acc_trees(train_X, train_Y, validation_X, validation_Y)
-    print(f"accuracy on test set: {model.score(test_fea1, test_gnd1)}")
+    # graph_acc_trees(train_X, train_Y, validation_X, validation_Y)
+    # graph_acc_features(train_X, train_Y, validation_X, validation_Y)
+    graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
+    # print(f"accuracy on test set: {model.score(test_fea1, test_gnd1)}")
     # model = feature_importance(model)
     # feature_heatmap(model)
 
