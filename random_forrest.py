@@ -1,5 +1,7 @@
 import numpy as np
 import scipy.io
+from sklearn.metrics import RocCurveDisplay
+
 import util
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import SelectFromModel
@@ -11,7 +13,7 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
     # Fix depth, graph number of trees vs accuracy
     clfs = []
-    num_trees = list(range(1, 501))
+    num_trees = list(range(1, 5001, 50))
     for i in num_trees:
         clf = RandomForestClassifier(n_estimators=i, n_jobs=-1)
         clf.fit(train_X, train_Y)
@@ -57,8 +59,8 @@ def prune_tree(train, truth):
 
 def feature_importance(model):
     print("Feature importance for every pixel:")
-    # fi = np.array(SelectFromModel(model).get_support())
-    # print(fi.reshape(10, 10))
+    fi = np.array(SelectFromModel(model).get_support())
+    print(fi.reshape(10, 10))
     return model
 
 
@@ -72,31 +74,31 @@ def train_model(train_X, train_Y, validation_X, validation_Y):
     :param validation_Y: array of ground truth values for validation
     :return: trained model
     """
-    n_estimators_arr = [5] #[x for x in range(1, 300, 1)]
-    max_features = ['sqrt', 'log2']
-    max_depth = [10] #[x for x in range(1, 50)]
+    n_estimators_arr = [x for x in range(1, 5000, 50)]
+    max_features = ['log2']
+    max_depth = [None]
     best_params = ''
     best_acc = 0
     best_model = None
-    acc_dict = {}
+    model_dict = {}
     for n in n_estimators_arr:
         for max_fea in max_features:
             for depth in max_depth:
-                # print("n:", n, "max_fea:", max_fea, "depth:", depth)
-                model = RandomForestClassifier(n_estimators=n, max_features=max_fea, n_jobs=-1, max_depth=depth)
+                print("n:", n, "max_fea:", max_fea, "depth:", depth)
+                model = RandomForestClassifier(n_estimators=n, max_features=max_fea, max_depth=depth, n_jobs=-1)
                 model.fit(train_X, train_Y)
                 accuracy = model.score(validation_X, validation_Y)
-                acc_dict[accuracy] = [f'n = {n}', f'max_fea = {max_fea}', f'depth = {depth}']
+                model_dict[accuracy] = [f'n = {n}', f'max_fea = {max_fea}', f'depth = {depth}']
                 if accuracy > best_acc:
                     best_model = model
                     best_params = "n_estimators = " + str(n) + ", max_features = " + str(max_fea) + ", max depth = " + str(depth)
                     best_acc = accuracy
     print("parameters for best model: ", best_params)
     print("best accuracy on validation set: ", best_acc)
-    temp = sorted(acc_dict, reverse=True)
-    acc_dict = {key: acc_dict[key] for key in temp}
-    print("acc_dict", acc_dict)
-    return model
+    temp = sorted(model_dict, reverse=True)
+    model_dict = {key: model_dict[key] for key in temp}
+    print("model_dict", model_dict)
+    return best_model
 
 
 def get_data():
@@ -139,10 +141,15 @@ def feature_heatmap(model):
 
 def main():
     train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = get_data()
-    model = train_model(train_X, train_Y, validation_X, validation_Y)
+    # model = train_model(train_X, train_Y, validation_X, validation_Y)
     graph_acc_trees(train_X, train_Y, validation_X, validation_Y)
-    model = feature_importance(model)
-    feature_heatmap(model)
+    print(f"accuracy on test set: {model.score(test_fea1, test_gnd1)}")
+    # model = feature_importance(model)
+    # feature_heatmap(model)
+
+    # RocCurveDisplay.from_estimator(model.fit(train_X, train_Y), test_fea1, test_gnd1)
+    # RocCurveDisplay.from_predictions(test_gnd1.ravel(), model.predict(test_fea1), pos_label=8)
+    # plt.show()
 
 
 if __name__ == '__main__':

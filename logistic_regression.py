@@ -1,13 +1,9 @@
-from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
-
 import util
 import numpy as np
 import scipy.io
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import RocCurveDisplay, plot_roc_curve
-from sklearn import metrics
+from sklearn.metrics import RocCurveDisplay
 # from sklearn.linear_model import LogisticRegressionCV
 # from sklearn.model_selection import GridSearchCV
 # from sklearn.preprocessing import StandardScaler
@@ -42,6 +38,27 @@ def main():
     # scalar.fit(validation_X)
     # scalar.transform(validation_X)
 
+    # Fix tolerance, graph C vs accuracy
+    c_train_acc = []
+    c_validation_acc = []
+    c_arr = [.00000001, .0000001, .00001, .0001, .001, .01, .1, 1, 10, 100]
+    for c in c_arr:
+        model = LogisticRegression(C=c, penalty='l2', solver='liblinear', tol=.01)
+        model.fit(train_X, train_Y.ravel())
+        train_acc = model.score(train_X, train_Y)
+        val_acc = model.score(validation_X, validation_Y)
+        c_train_acc.append(train_acc * 100)
+        c_validation_acc.append(val_acc * 100)
+    fig, ax = plt.subplots()
+    plt.xscale("log")
+    ax.set_xlabel("1/λ")
+    ax.set_ylabel("Accuracy %")
+    ax.set_title("Accuracy vs 1/λ (C)")
+    ax.plot(c_arr, c_train_acc, label="train", marker='o')
+    ax.plot(c_arr, c_validation_acc, label="validation", marker='o')
+    ax.legend()
+    plt.show()
+
     # Fix C, graph tolerance vs accuracy
     t_train_acc = []
     t_validation_acc = []
@@ -51,8 +68,8 @@ def main():
         model.fit(train_X, train_Y.ravel())
         train_acc = model.score(train_X, train_Y)
         val_acc = model.score(validation_X, validation_Y)
-        t_train_acc.append(train_acc*100)
-        t_validation_acc.append(val_acc*100)
+        t_train_acc.append(train_acc * 100)
+        t_validation_acc.append(val_acc * 100)
     fig, ax = plt.subplots()
     plt.xscale("log")
     ax.set_xlabel("Tolerance")
@@ -61,34 +78,11 @@ def main():
     ax.plot(tol_arr, t_train_acc, label="train", marker='o')
     ax.plot(tol_arr, t_validation_acc, label="validation", marker='o')
     ax.legend()
-    fig.savefig("Err_vs_tol_Log_Reg.png")
-    plt.show()
-
-    # Fix tolerance, graph C vs accuracy
-    c_train_acc = []
-    c_validation_acc = []
-    c_arr = [.00000001, .0000001, .00001, .0001, .001, .01, .1, 1, 10, 100]
-    for c in c_arr:
-        model = LogisticRegression(C=c, penalty='l2', solver='liblinear', tol=tol)
-        model.fit(train_X, train_Y.ravel())
-        train_acc = model.score(train_X, train_Y)
-        val_acc = model.score(validation_X, validation_Y)
-        c_train_acc.append(train_acc*100)
-        c_validation_acc.append(val_acc*100)
-    fig, ax = plt.subplots()
-    plt.xscale("log")
-    ax.set_xlabel("1/λ")
-    ax.set_ylabel("Accuracy %")
-    ax.set_title("Accuracy vs 1/λ (C)")
-    ax.plot(c_arr, c_train_acc, label="train", marker='o')
-    ax.plot(c_arr, c_validation_acc, label="validation", marker='o')
-    ax.legend()
-    fig.savefig("Err_vs_C_Log_Reg.png")
     plt.show()
 
     # small grid search (zooming in based on graphs above) over C and tol for best model overall
-    tol_arr = [.000001] #[x/100 for x in range(1, 50, 1)]
-    c_arr = [10**-20] #[x/10000 for x in range(1, 100, 1)]
+    tol_arr = [x/100 for x in range(1, 50, 1)]
+    c_arr = [x/10000 for x in range(1, 100, 1)]
     best_params = ''
     best_acc = 0
     best_model = None
@@ -108,9 +102,7 @@ def main():
     print(f"accuracy on test set: {best_model.score(test_fea1, test_gnd1)}")
 
     # ROC curve on test data
-    RocCurveDisplay.from_estimator(best_model.fit(train_X, train_Y.ravel()), test_fea1, test_gnd1.ravel())
-    fig, ax = plt.subplots()
-    fig.savefig("ROC.png")
+    RocCurveDisplay.from_predictions(test_gnd1.ravel(), model.predict(test_fea1), pos_label=8)
     plt.show()
 
 
