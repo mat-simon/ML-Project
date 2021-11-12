@@ -97,8 +97,8 @@ def train_model(train_X, train_Y, validation_X, validation_Y):
     :param validation_Y: array of ground truth values for validation
     :return: trained model
     """
-    n_estimators_arr = [x for x in range(1, 5000, 50)]
-    max_features = ['log2']
+    n_estimators_arr = [x for x in range(1, 200, 1)]
+    max_features = ['log2', 'sqrt', 20, 30, 40, 50, 60]
     max_depth = [None]
     best_params = ''
     best_acc = 0
