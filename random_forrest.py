@@ -30,6 +30,7 @@ def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
     fig.savefig("accuracy_trees.png")
     plt.show()
 
+
 def graph_acc_features(train_X, train_Y, validation_X, validation_Y):
     clfs = []
     max_features = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
@@ -55,6 +56,7 @@ def graph_acc_features(train_X, train_Y, validation_X, validation_Y):
     ax.legend()
     fig.savefig("accuracy_features.png")
     plt.show()
+
 
 def graph_acc_depth(train_X, train_Y, validation_X, validation_Y):
     clfs = []
@@ -97,8 +99,8 @@ def train_model(train_X, train_Y, validation_X, validation_Y):
     :param validation_Y: array of ground truth values for validation
     :return: trained model
     """
-    n_estimators_arr = [x for x in range(1, 200, 1)]
-    max_features = ['log2', 'sqrt', 20, 30, 40, 50, 60]
+    n_estimators_arr = [x for x in range(3, 200)]
+    max_features = ['log2', 'sqrt']
     max_depth = [None]
     best_params = ''
     best_acc = 0
@@ -135,7 +137,6 @@ def get_data():
         print("success")
     except Exception as e:
         print(e)
-
     print("Reducing train data to first 1000 rows of 4s and 8s...")
     print("Reducing validation data to second 1000 rows of 4s and 8s...")
     try:
@@ -162,12 +163,13 @@ def feature_heatmap(model):
     plt.colorbar(heatmap)
     fig.savefig('heatmap.png')
 
+
 def main():
     train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = get_data()
     # model = train_model(train_X, train_Y, validation_X, validation_Y)
     # graph_acc_trees(train_X, train_Y, validation_X, validation_Y)
-    # graph_acc_features(train_X, train_Y, validation_X, validation_Y)
-    graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
+    graph_acc_features(train_X, train_Y, validation_X, validation_Y)
+    # graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
     # print(f"accuracy on test set: {model.score(test_fea1, test_gnd1)}")
     # model = feature_importance(model)
     # feature_heatmap(model)
