@@ -8,6 +8,15 @@ from sklearn.ensemble import RandomForestClassifier
 
 
 def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
+    """
+    Trains and graphs the scores of multiple models from a range of different
+    number of tress. All the other hyperparamters are set to default or fixed
+    :param train_X: numpy array with the MNIST image data for training
+    :param train_Y: array of ground truth values for training
+    :param validation_X: numpy array with the MNIST image data for validation
+    :param validation_Y: array of ground truth values for validation
+    :return: None
+    """
     # Fix depth and max_features, graph number of trees vs accuracy
     clfs = []
     num_trees = list(range(1, 501, 5))
@@ -35,6 +44,15 @@ def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
 
 
 def graph_acc_features(train_X, train_Y, validation_X, validation_Y):
+    """
+    Trains and graphs the scores of multiple models from a range of different
+    number of features. All the other hyperparamters are set to default or fixed
+    :param train_X: numpy array with the MNIST image data for training
+    :param train_Y: array of ground truth values for training
+    :param validation_X: numpy array with the MNIST image data for validation
+    :param validation_Y: array of ground truth values for validation
+    :return: None
+    """
     clfs = []
     max_features = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     best_acc = [0, 0]
@@ -62,6 +80,15 @@ def graph_acc_features(train_X, train_Y, validation_X, validation_Y):
 
 
 def graph_acc_depth(train_X, train_Y, validation_X, validation_Y):
+    """
+    Trains and graphs the scores of multiple models from a range of different
+    number of depth. All the other hyperparamters are set to default or fixed
+    :param train_X: numpy array with the MNIST image data for training
+    :param train_Y: array of ground truth values for training
+    :param validation_X: numpy array with the MNIST image data for validation
+    :param validation_Y: array of ground truth values for validation
+    :return: None
+    """
     clfs = []
     num_depth = list(range(1, 100))
     best_acc = [0, 0]
@@ -125,6 +152,12 @@ def train_model(train_X, train_Y, validation_X, validation_Y):
 
 
 def feature_heatmap(model):
+    """
+    Heatmap shows the most important pixels in a 100x100 image using the
+    impurity value scores
+    :param model: best model obtained from the grid search in train_model
+    :return: None
+    """
     feature_scores = np.array(model.feature_importances_).reshape(10, 10).T
     fig, ax = plt.subplots()
     heatmap = ax.imshow(feature_scores)
@@ -133,11 +166,13 @@ def feature_heatmap(model):
     ax.set_title('Pixel importance')
     plt.colorbar(heatmap)
     plt.show()
+    # fig.savefig('heatmap.png')
+
 
 
 def main():
     # get data after the preprocessing
-    train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = util.get_data()
+    train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = util.get_data(4, 8)
 
     """Tuning hyperparmeters and graphing results"""
     # testing different values for max_features
