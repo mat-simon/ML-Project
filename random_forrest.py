@@ -1,12 +1,9 @@
 import numpy as np
-import scipy.io
 from sklearn.metrics import RocCurveDisplay
 
 import util
 import matplotlib.pyplot as plt
-from sklearn.feature_selection import SelectFromModel
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 # from sklearn.model_selection import GridSearchCV
 
 
@@ -14,10 +11,15 @@ def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
     # Fix depth and max_features, graph number of trees vs accuracy
     clfs = []
     num_trees = list(range(1, 501, 5))
+    best_acc = [0, 0]
     for i in num_trees:
         clf = RandomForestClassifier(n_estimators=i, n_jobs=-1)
         clf.fit(train_X, train_Y)
         clfs.append(clf)
+        score = clf.score(validation_X, validation_Y) * 100
+        if best_acc[1] < score:
+            best_acc[0] = i
+            best_acc[1] = score
     train_scores = [clf.score(train_X, train_Y)*100 for clf in clfs]
     validation_scores = [clf.score(validation_X, validation_Y)*100 for clf in clfs]
     fig, ax = plt.subplots()
@@ -27,8 +29,9 @@ def graph_acc_trees(train_X, train_Y, validation_X, validation_Y):
     ax.plot(num_trees, train_scores, label="train", marker='o', markersize=2)
     ax.plot(num_trees, validation_scores, label="validation", marker='o', markersize=2)
     ax.legend()
-    fig.savefig("accuracy_trees.png")
+    plt.annotate(str(best_acc[1]), (best_acc[0], best_acc[1]))
     plt.show()
+    # fig.savefig("accuracy_trees.png")
 
 
 def graph_acc_features(train_X, train_Y, validation_X, validation_Y):
@@ -54,8 +57,8 @@ def graph_acc_features(train_X, train_Y, validation_X, validation_Y):
     high_score = round(best_acc[1], 2)
     plt.annotate(str(high_score), (best_acc[0], best_acc[1]))
     ax.legend()
-    fig.savefig("accuracy_features.png")
     plt.show()
+    # fig.savefig("accuracy_features.png")
 
 
 def graph_acc_depth(train_X, train_Y, validation_X, validation_Y):
@@ -80,13 +83,8 @@ def graph_acc_depth(train_X, train_Y, validation_X, validation_Y):
     ax.plot(num_depth, validation_scores, label="validation", marker='o', markersize=2)
     ax.legend()
     plt.annotate(str(best_acc[1]), (best_acc[0], best_acc[1]))
-    fig.savefig("accuracy_depth.png")
     plt.show()
-
-
-def feature_importance(model):
-    fi = np.array(SelectFromModel(model).get_support())
-    return model
+    # fig.savefig("accuracy_depth.png")
 
 
 def train_model(train_X, train_Y, validation_X, validation_Y):
@@ -126,33 +124,6 @@ def train_model(train_X, train_Y, validation_X, validation_Y):
     return best_model
 
 
-def get_data():
-    print("Loading data...")
-    try:
-        dictionary_data = scipy.io.loadmat('MNISTmini.mat')
-        train_fea1 = np.array(dictionary_data['train_fea1'])
-        train_gnd1 = np.array(dictionary_data['train_gnd1'])
-        test_fea1 = np.array(dictionary_data['test_fea1'])
-        test_gnd1 = np.array(dictionary_data['test_gnd1'])
-        print("success")
-    except Exception as e:
-        print(e)
-    print("Reducing train data to first 1000 rows of 4s and 8s...")
-    print("Reducing validation data to second 1000 rows of 4s and 8s...")
-    try:
-        train_fea1, train_gnd1 = util.reduce_data(train_fea1, train_gnd1, 4, 8)
-        test_fea1, test_gnd1 = util.reduce_data(test_fea1, test_gnd1, 4, 8)
-        # 4's: [0-999], 8's: [5842-6841]
-        train_X = train_fea1[np.r_[0:1000, 5842:6842], :]
-        train_Y = train_gnd1[np.r_[0:1000, 5842:6842], :]
-        validation_X = train_fea1[np.r_[1000:2000, 6842:7842], :]
-        validation_Y = train_gnd1[np.r_[1000:2000, 6842:7842], :]
-        print("success\n")
-    except Exception as e:
-        print(e)
-    return train_X, train_Y.ravel(), validation_X, validation_Y, test_fea1, test_gnd1
-
-
 def feature_heatmap(model):
     feature_scores = np.array(model.feature_importances_).reshape(10, 10).T
     fig, ax = plt.subplots()
@@ -161,14 +132,24 @@ def feature_heatmap(model):
     ax.set_yticks(np.arange(10))
     ax.set_title('Pixel importance')
     plt.colorbar(heatmap)
-    fig.savefig('heatmap.png')
+    plt.show()
 
 
 def main():
-    train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = get_data()
-    # model = train_model(train_X, train_Y, validation_X, validation_Y)
-    # graph_acc_trees(train_X, train_Y, validation_X, validation_Y)
+    # get data after the preprocessing
+    train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = util.get_data()
+
+    """Tuning hyperparmeters and graphing results"""
+    # testing different values for max_features
     graph_acc_features(train_X, train_Y, validation_X, validation_Y)
+    # testing different values for max_depth
+    graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
+    # testing different values for n_estimators (tree)
+    graph_acc_trees(train_X, train_Y, validation_X, validation_Y)
+    # get model using grid search for best parameters
+    model = train_model(train_X, train_Y, validation_X, validation_Y)
+    # show most important features in the best model found
+    feature_heatmap(model)
     # graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
     # print(f"accuracy on test set: {model.score(test_fea1, test_gnd1)}")
     # model = feature_importance(model)
