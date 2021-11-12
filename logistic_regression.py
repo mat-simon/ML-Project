@@ -10,24 +10,8 @@ from sklearn.metrics import RocCurveDisplay
 
 
 def main():
-    dictionary_data = scipy.io.loadmat('MNISTmini.mat')
-
-    train_fea1 = np.array(dictionary_data['train_fea1'])
-    train_gnd1 = np.array(dictionary_data['train_gnd1'])
-    test_fea1 = np.array(dictionary_data['test_fea1'])
-    test_gnd1 = np.array(dictionary_data['test_gnd1'])
-
-    # delete rows that are not 4 or 8 (our assigned digits to classify)
-    train_fea1, train_gnd1 = util.reduce_data(train_fea1, train_gnd1, 4, 8)
-    test_fea1, test_gnd1 = util.reduce_data(test_fea1, test_gnd1, 4, 8)
-
-    # 4's: [0-999], 8's: [5842-6841]
-    # take first 1000 rows of 4's and first 1000 rows of 8's to create the training set
-    train_X = train_fea1[np.r_[0:1000, 5842:6842], :]
-    train_Y = train_gnd1[np.r_[0:1000, 5842:6842], :]
-    # take second 1000 rows of 4's and second 1000 rows of 8's to create validation set
-    validation_X = train_fea1[np.r_[1000:2000, 6842:7842], :]
-    validation_Y = train_gnd1[np.r_[1000:2000, 6842:7842], :]
+    # get data after the preprocessing
+    train_X, train_Y, validation_X, validation_Y, test_fea1, test_gnd1 = util.get_data(4, 8)
     print("shape of train set:", train_X.shape)
     print("shape of validation set:", validation_X.shape, "\n")
 
