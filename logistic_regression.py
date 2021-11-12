@@ -102,6 +102,7 @@ def main():
     print(f"accuracy on test set: {best_model.score(test_fea1, test_gnd1)}")
 
     # ROC curve on test data
+    RocCurveDisplay.from_estimator(best_model, test_fea1, test_gnd1)
     RocCurveDisplay.from_predictions(test_gnd1.ravel(), model.predict(test_fea1), pos_label=8)
     plt.show()
 

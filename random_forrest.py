@@ -181,14 +181,13 @@ def main():
     graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
     # testing different values for n_estimators (tree)
     graph_acc_trees(train_X, train_Y, validation_X, validation_Y)
-    # get model using grid search for best parameters
+
+    # get model using informed grid search for best parameters
     model = train_model(train_X, train_Y, validation_X, validation_Y)
     # show most important features in the best model found
     feature_heatmap(model)
     # graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
     # print(f"accuracy on test set: {model.score(test_fea1, test_gnd1)}")
-    # model = feature_importance(model)
-    # feature_heatmap(model)
 
     # RocCurveDisplay.from_estimator(model.fit(train_X, train_Y), test_fea1, test_gnd1)
     # RocCurveDisplay.from_predictions(test_gnd1.ravel(), model.predict(test_fea1), pos_label=8)
