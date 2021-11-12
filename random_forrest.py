@@ -134,7 +134,7 @@ def train_model(train_X, train_Y, validation_X, validation_Y):
     for n in n_estimators_arr:
         for max_fea in max_features:
             for depth in max_depth:
-                print("n:", n, "max_fea:", max_fea, "depth:", depth)
+                # print("n:", n, "max_fea:", max_fea, "depth:", depth)
                 model = RandomForestClassifier(n_estimators=n, max_features=max_fea, max_depth=depth, n_jobs=-1)
                 model.fit(train_X, train_Y)
                 accuracy = model.score(validation_X, validation_Y)
