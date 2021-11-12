@@ -6,6 +6,14 @@ import scipy.io
 
 
 def reduce_data(train, truth, x, y):
+    """
+    Removes all but x, y digits from the MNISTmin.mat datatset
+    :param train: numpy array with the MNIST image data for training/test
+    :param truth: numpy array with the ground truth for the training/test data
+    :param x: target digit to keep in reduced dataset
+    :param y: target digit to keep in reduced dataset
+    :return: numpy arrays with the reduced data (xs and ys only)
+    """
     # reduces full data to just data of digits x and y
     rows = truth.shape[0]
     bool_list = []
@@ -19,7 +27,14 @@ def reduce_data(train, truth, x, y):
     return reduced_train, reduced_truth
 
 
-def get_data():
+def get_data(x, y):
+    """
+    Preprocesses the MNISTmini.mat dataset by reducing and slicing the data for
+    the desired target values
+    :param x: target digit to keep in reduced dataset
+    :param y: target digit to keep in reduced dataset
+    :return: reduced and slided dataset
+    """
     print("Loading data...")
     try:
         dictionary_data = scipy.io.loadmat('MNISTmini.mat')
@@ -33,8 +48,8 @@ def get_data():
     print("Reducing train data to first 1000 rows of 4s and 8s...")
     print("Reducing validation data to second 1000 rows of 4s and 8s...")
     try:
-        train_fea1, train_gnd1 = reduce_data(train_fea1, train_gnd1, 4, 8)
-        test_fea1, test_gnd1 = reduce_data(test_fea1, test_gnd1, 4, 8)
+        train_fea1, train_gnd1 = reduce_data(train_fea1, train_gnd1, x, y)
+        test_fea1, test_gnd1 = reduce_data(test_fea1, test_gnd1, x, y)
         # 4's: [0-999], 8's: [5842-6841]
         train_X = train_fea1[np.r_[0:1000, 5842:6842], :]
         train_Y = train_gnd1[np.r_[0:1000, 5842:6842], :]
