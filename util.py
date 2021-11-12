@@ -2,6 +2,7 @@
 Declare common infrastructure that may be needed for RF and LR
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def reduce_data(train, truth, x, y):
