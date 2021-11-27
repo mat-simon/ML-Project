@@ -9,6 +9,3 @@ Part 2:
 Full MNIST classification using XGBoost
 Classify emotions of facial images using Catboost
 Regression of superconductor critical temperatures using Catboost
-
-Optimize hyper-parameters to generalize to validation set with low classification
-error.
