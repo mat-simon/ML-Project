@@ -33,7 +33,7 @@ def get_data(x, y):
     the desired target values
     :param x: target digit to keep in reduced dataset
     :param y: target digit to keep in reduced dataset
-    :return: reduced and slided dataset
+    :return: reduced and sliced dataset
     """
     print("Loading data...")
     try:

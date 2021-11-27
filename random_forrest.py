@@ -134,7 +134,7 @@ def train_model(train_X, train_Y, validation_X, validation_Y):
     for n in n_estimators_arr:
         for max_fea in max_features:
             for depth in max_depth:
-                print("n:", n, "max_fea:", max_fea, "depth:", depth)
+                # print("n:", n, "max_fea:", max_fea, "depth:", depth)
                 model = RandomForestClassifier(n_estimators=n, max_features=max_fea, max_depth=depth, n_jobs=-1)
                 model.fit(train_X, train_Y)
                 accuracy = model.score(validation_X, validation_Y)
@@ -181,14 +181,13 @@ def main():
     graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
     # testing different values for n_estimators (tree)
     graph_acc_trees(train_X, train_Y, validation_X, validation_Y)
-    # get model using grid search for best parameters
+
+    # get model using informed grid search for best parameters
     model = train_model(train_X, train_Y, validation_X, validation_Y)
     # show most important features in the best model found
     feature_heatmap(model)
     # graph_acc_depth(train_X, train_Y, validation_X, validation_Y)
     # print(f"accuracy on test set: {model.score(test_fea1, test_gnd1)}")
-    # model = feature_importance(model)
-    # feature_heatmap(model)
 
     # RocCurveDisplay.from_estimator(model.fit(train_X, train_Y), test_fea1, test_gnd1)
     # RocCurveDisplay.from_predictions(test_gnd1.ravel(), model.predict(test_fea1), pos_label=8)
