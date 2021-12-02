@@ -7,18 +7,42 @@ import matplotlib.pyplot as plt
 def main():
     train, test = get_data('MNIST.mat')
 
-    param = {'num_class': 10, 'max_depth': 2, 'eta': 1, 'objective': 'multi:softmax'}
-    num_round = 600
-    early_stopping = 50
-    eval_list = [(train, "train"), (test, "test")]
-    bst = xgb.train(param, train, num_round, evals=eval_list, early_stopping_rounds=early_stopping, verbose_eval=True)
+    params = {'num_class': 10, 'max_depth': 5, 'eta': .3, 'objective': 'multi:softmax', 'gpu_id': 0,
+              'tree_method': 'gpu_hist'}
+    num_round = 5000
 
-    # make prediction
-    preds = bst.predict(test)
-    print(preds)
+    grid = [
+        (max_depth, min_child_weight)
+        for max_depth in range(3, 12)
+        for min_child_weight in range(1, 10)
+    ]
 
-    # for saving later
-    # bst.save_model('model_file_name.json')
+    min_merror = float("Inf")
+    best_params = None
+    for max_depth, min_child_weight in grid:
+        print("CV with max_depth={}, min_child_weight={}".format(
+            max_depth,
+            min_child_weight))
+        params['max_depth'] = max_depth
+        params['min_child_weight'] = min_child_weight
+        cv_results = xgb.cv(
+            params,
+            train,
+            num_boost_round=num_round,
+            seed=8,
+            nfold=5,
+            metrics='merror',
+            verbose_eval=False,
+            early_stopping_rounds=10
+        )
+
+        mean_merror = min(cv_results['test-merror-mean'])
+        boost_rounds = cv_results['test-merror-mean'].index(mean_merror)
+        print("\tmerror {} for {} rounds".format(mean_merror, boost_rounds))
+        if mean_merror < min_merror:
+            min_merror = mean_merror
+            best_params = (max_depth, min_child_weight)
+            print("Best params: {}, {}, merror: {}".format(best_params[0], best_params[1], min_merror))
 
 
 def get_data(file):
