@@ -6,12 +6,9 @@ import matplotlib.pyplot as plt
 
 def main():
     train, test = get_data('MNIST.mat')
-    for value in test.get_label():
-        if value not in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
-            print("wtf?", value)
 
     param = {'num_class': 10, 'max_depth': 2, 'eta': 1, 'objective': 'multi:softmax'}
-    num_round = 12
+    num_round = 600
     early_stopping = 50
     eval_list = [(train, "train"), (test, "test")]
     bst = xgb.train(param, train, num_round, evals=eval_list, early_stopping_rounds=early_stopping, verbose_eval=True)
