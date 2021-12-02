@@ -3,7 +3,7 @@ Project 1
 
 Part 1:
 Binary classification of subset of MNISTmini dataset (10x10 pixel image data).
-Differentiate (4 vs 8) using logistic regression and random forest.
+Differentiate (4 vs 8) using scikit-learn logistic regression and random forest.
 
 Part 2:
 Full MNIST classification using XGBoost
