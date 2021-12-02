@@ -1,4 +1,5 @@
-matplotlib
+matplotlib~=3.4.3
 numpy~=1.21.3
 scipy==1.7.1
 scikit-learn~=1.0.1
+xgboost~=1.5.1

@@ -6,7 +6,15 @@ import matplotlib.pyplot as plt
 
 def main():
     train, test = get_data('MNIST.mat')
-    print(train.num_row())
+    param = {'num_class': 10, 'max_depth': 2, 'eta': 1, 'objective': 'multi:softmax'}
+    num_round = 2
+    bst = xgb.train(param, train, num_round)
+    # make prediction
+    preds = bst.predict(test)
+    print(preds)
+
+    # for saving later
+    # bst.save_model('model_file_name.json')
 
 
 def get_data(file):
