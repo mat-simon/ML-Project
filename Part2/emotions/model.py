@@ -1,74 +1,89 @@
 from catboost import CatBoostClassifier, Pool, cv, CatBoost
 from sklearn.model_selection import cross_val_score
 from sklearn import metrics
+from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn import preprocessing
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 
-def generate_metrics(model, X_test, y_test):
+def generate_metrics(model, test_x, test_y):
     # make predictions
-    expected_y = y_test
-    predicted_y = model.predict(X_test)
-
+    expected_y = test_y
+    predicted_y = model.predict(test_x)
+    classes = ['angry', 'disgust', 'fear',
+               'happy', 'neutral', 'sad', 'surprise']
     # summarize the fit of the model
     print("Summary:")
-    print(metrics.classification_report(expected_y, predicted_y))
+    print(metrics.classification_report(expected_y, predicted_y,
+                                        target_names=classes))
     print("Confusion matrix:")
     cm = metrics.confusion_matrix(expected_y, predicted_y)
     print(metrics.confusion_matrix(expected_y, predicted_y))
     sns.heatmap(cm, annot=True)
+    plt.savefig('confusion_matrix.png')
+
+
+def get_accuracy(model, test_x, test_y):
+    expected_y = test_y
+    predicted_y = predicted_y = model.predict(test_x).reshape(5757, )
+
+    i = 0
+    hit = 0
+    for prediction in predicted_y:
+        if prediction == expected_y[i]:
+            hit += 1
+        i += 1
+    return (hit / i) * 100
 
 
 def main():
-    # Load data
-    X_train = np.array(np.load('train_x.npy'))
-    y_train = np.array(np.load('train_y.npy'))
-    X_test = np.array(np.load('test_x.npy'))
-    y_test = np.array(np.load('test_y.npy'))
-    print("Shape of training and testing data")
-    print(X_train.shape, y_train.shape)
-    print(X_test.shape, y_test.shape)
+    print("Loading data..")
+
+    train_full = np.array(np.load('data/training_x.npy'))
+    truth_full = np.array(np.load('data/training_y.npy'))
+    print(train_full.shape, truth_full.shape)
+    # test_x = np.array(np.load('data/test_x.npy'))
+    # test_y = np.array(np.load('data/test_y.npy'))
+    train_x, val_x, train_y, val_y = train_test_split(train_full,
+                                                      truth_full,
+                                                      test_size=0.2,
+                                                      random_state=42)
+    print("Shape of training and testing data:")
+    print(train_x.shape, train_y.shape)
+    print(val_x.shape, val_y.shape)
 
     # Pre-processing data
     print("Encoding labels to numerical values...")
     le = preprocessing.LabelEncoder()
-    le.fit(y_train)
-    train_labels_encoded = le.transform(y_train)
+    le.fit(train_y)
+    train_labels_encoded = le.transform(train_y)
     print(train_labels_encoded)
-    le.fit(y_test)
-    test_labels_encoded = le.transform(y_test)
-    print(test_labels_encoded)
+    le.fit(val_y)
+    validation_labels_encoded = le.transform(val_y)
+    print(validation_labels_encoded)
 
-    y_train, y_test = train_labels_encoded, test_labels_encoded
-    X_train, X_test = X_train.astype('float32'), X_test.astype('float32')
-    # X_train, X_test = X_train / 255.0, X_test / 255.0
+    train_y, val_y = train_labels_encoded, validation_labels_encoded
 
-    cat_features = list(range(0, X_train.shape[1]))
-    # print(X_train)
-
-    # emotions_dataset = Pool(data=X_train,
-    #                         label=y_train,
-    #                         cat_features=cat_features,
-    #                         thread_count=-1,)
+    print("Creating Pool from training dataset...")
+    train_data = Pool(data=train_x, label=train_y,
+                      cat_features=None, weight=None,
+                      thread_count=-1)
 
     print("Training model...")
-    # params = {"iterations": 1000,
-    #           "loss_function": "MultiClass"}
-    # scores = cv(emotions_dataset,
-    #             params,
-    #             fold_count=10)
-    # print(scores)
     model = CatBoostClassifier(iterations=1000,
                                loss_function='MultiClass',
                                task_type='GPU',
                                devices='0:1')
 
-    model.fit(X_train, y_train)
+    model.fit(train_data, verbose=10)
 
-    generate_metrics(model, X_test, y_test)
+    # uncomment to save model
+    # model.save_model("model_v3.cbm")
 
-    return
+    generate_metrics(model, val_x, val_y)
+    get_accuracy(model, val_x, val_y)
 
 
 if __name__ == '__main__':
