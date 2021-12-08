@@ -1,26 +1,32 @@
 import os
-from PIL import Image
 import numpy as np
+import cv2
 
 
 def jpg_to_numpy():
-    train_path = "../../data/emotions/train"
+    train_path = "data/train"
     train_x = []
     train_y = []
     for emotion_folder in os.listdir(train_path):
-        images_path = f"../../data/emotions/train/{emotion_folder}"
-        if emotion_folder == "disgust":
-            continue
+        images_path = f"data/train/{emotion_folder}"
+        # uncomment to filer class
+        # if emotion_folder == "disgust":
+        #     continue
         for emotion_image in os.listdir(images_path):
             image_path = images_path + f"/{emotion_image}"
-            img = Image.open(image_path)
-            data = np.asarray(img).reshape(2304,)
+            # get numpy array image in gray scale
+            img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+            # perform the resizing
+            res = cv2.resize(img, dsize=(20, 20),
+                             interpolation=cv2.INTER_NEAREST)
+            data = np.asarray(res).reshape(400,)
             train_x.append(data)
             train_y.append(emotion_folder)
 
-    with open('train_x.npy', 'wb') as f:
+    # filename
+    with open('data/training_x.npy', 'wb') as f:
         np.save(f, train_x)
-    with open('train_y.npy', 'wb') as f:
+    with open('data/training_y.npy', 'wb') as f:
         np.save(f, train_y)
 
 
