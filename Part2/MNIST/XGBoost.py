@@ -10,40 +10,37 @@ def main():
     params = {'num_class': 10, 'max_depth': 5, 'eta': .3, 'objective': 'multi:softmax', 'gpu_id': 0,
               'tree_method': 'gpu_hist'}
     num_round = 5000
+    params['max_depth'] = 5
+    params['min_child_weight'] = 1
 
-    grid = [
-        (max_depth, min_child_weight)
-        for max_depth in range(3, 12)
-        for min_child_weight in range(1, 10)
-    ]
+    # grid = [
+    #     (max_depth)
+    #     for max_depth in range(3, 12)
+    # ]
 
     min_merror = float("Inf")
     best_params = None
-    for max_depth, min_child_weight in grid:
-        print("CV with max_depth={}, min_child_weight={}".format(
-            max_depth,
-            min_child_weight))
-        params['max_depth'] = max_depth
-        params['min_child_weight'] = min_child_weight
+    for eta in [.3]:
+        print("CV with eta={}".format(eta))
+        # We update our parameters
+        params['eta'] = eta
+        # Run and time CV
         cv_results = xgb.cv(
             params,
             train,
             num_boost_round=num_round,
             seed=8,
             nfold=5,
-            metrics='merror',
-            verbose_eval=False,
+            metrics=['merror'],
             early_stopping_rounds=10
-        )
-
+        )  # Update best score
         mean_merror = min(cv_results['test-merror-mean'])
         boost_rounds = cv_results['test-merror-mean'].index(mean_merror)
-        print("\tmerror {} for {} rounds".format(mean_merror, boost_rounds))
+        print("\tmerror {} for {} rounds\n".format(mean_merror, boost_rounds))
         if mean_merror < min_merror:
             min_merror = mean_merror
-            best_params = (max_depth, min_child_weight)
-            print("Best params: {}, {}, merror: {}".format(best_params[0], best_params[1], min_merror))
-
+            best_params = eta
+            print("Best params: {}, merror: {}".format(best_params, min_merror))
 
 def get_data(file):
     print("Loading data...")
