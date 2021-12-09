@@ -1,4 +1,4 @@
-from catboost import CatBoostRegressor, Pool
+from catboost import CatBoostRegressor, Pool, cv
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
@@ -38,17 +38,19 @@ def main():
     # model.fit(train_pool)
     # print("test score:", model.score(test_x, test_y))
 
+    # SKlearn gridcv
     params = {
-        'iterations': [1000],
-        'depth': [14]
+        'iterations': [400],
+        'learning_rate': [.15],
+        'depth': [12]
     }
     model = GridSearchCV(CatBoostRegressor(
         task_type='GPU',
-        verbose=10
+        verbose=20
     ), params)
     model.fit(train_x, train_y)
     print(f"Best estimator: {model.best_params_})")
-    print(f"MultiRMSE: {model.best_score_}")
+    print(f"RMSE: {model.best_score_}")
     print("Test score:", model.score(test_x, test_y))
 
 

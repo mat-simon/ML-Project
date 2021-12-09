@@ -48,10 +48,10 @@ def main():
     test_x = np.array(np.load('data/test_x.npy'))
     test_y = np.array(np.load('data/test_y.npy'))
 
-    train_80_x, val_20_x, train_80_y, val_20_y = train_test_split(train_x,
-                                                                  train_y,
-                                                                  test_size=0.2,
-                                                                  random_state=42)
+    # train_80_x, val_20_x, train_80_y, val_20_y = train_test_split(train_x,
+    #                                                               train_y,
+    #                                                               test_size=0.2,
+    #                                                               random_state=42)
     # Pre-processing data
     le = preprocessing.LabelEncoder()
     le.fit(train_y)
@@ -66,32 +66,32 @@ def main():
         cat_features=None, weight=None,
         thread_count=-1
     )
-    train_80_pool = Pool(
-        data=train_80_x, label=train_80_y,
-        cat_features=None, weight=None,
-        thread_count=-1
-    )
-    val_20_pool = Pool(
-        data=val_20_x, label=val_20_y,
-        cat_features=None, weight=None,
-        thread_count=-1
-    )
+    # train_80_pool = Pool(
+    #     data=train_80_x, label=train_80_y,
+    #     cat_features=None, weight=None,
+    #     thread_count=-1
+    # )
+    # val_20_pool = Pool(
+    #     data=val_20_x, label=val_20_y,
+    #     cat_features=None, weight=None,
+    #     thread_count=-1
+    # )
 
-    simple_model = CatBoostClassifier(
-        iterations=10,
-        loss_function='MultiClass',
-        od_type='IncToDec',
-        od_pval=.001,
-        task_type='GPU'
-    )
-    simple_model.fit(train_80_pool, eval_set=val_20_pool, verbose=100)
+    # simple_model = CatBoostClassifier(
+    #     iterations=9000,
+    #     loss_function='MultiClass',
+    #     od_type='IncToDec',
+    #     od_pval=.001,
+    #     task_type='GPU'
+    # )
+    # simple_model.fit(train_80_pool, eval_set=val_20_pool, verbose=100)
     # print(simple_model.score(test_x, test_y))
 
     # Catboost gridsearch
-    # param_grid = {'iterations': [1000],
+    # param_grid = {'iterations': [4000],
     #               'task_type': ['GPU'],
-    #               'depth': [6, 8, 11, 13],
-    #               'verbose': [10]}
+    #               'depth': [6, 8, 11],
+    #               'verbose': [100]}
     # simple_model.grid_search(
     #     param_grid,
     #     train_x,
@@ -118,19 +118,21 @@ def main():
     #     verbose=100
     # )
 
-    # # SKlearn GridSearchCV
-    # params = {
-    #     'iterations': [100],
-    #     'depth': [1, 2, 3, 4, 5, 6, 7, 8]
-    # }
-    # model = GridSearchCV(CatBoostClassifier(
-    #     task_type='GPU',
-    #     verbose=50),
-    #     params)
-    # model.fit(train_x, train_y)
-    # print(f"Best estimator: {model.best_params_})")
-    # print(f"Score: {model.best_score_}")
-    # print("Test score:", model.score(test_x, test_y))
+    # SKlearn GridSearchCV
+    params = {
+        'iterations': [2000],
+        'depth': [6, 8, 10]
+    }
+    model = GridSearchCV(CatBoostClassifier(
+        task_type='GPU',
+        od_type='IncToDec',
+        od_pval=.0001,
+        verbose=500),
+        params)
+    model.fit(train_x, train_y)
+    print(f"Best estimator: {model.best_params_})")
+    print(f"Score: {model.best_score_}")
+    print("Test score:", model.score(test_x, test_y))
 
     # uncomment to save model
     # model.save_model("model_v3.cbm")
