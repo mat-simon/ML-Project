@@ -1,7 +1,8 @@
-from catboost import CatBoostClassifier, Pool, cv
+from catboost import CatBoostClassifier, Pool
+import numpy as np
+import pandas as pd
 from sklearn import metrics
 from sklearn.model_selection import GridSearchCV, train_test_split
-import numpy as np
 from sklearn import preprocessing
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -39,43 +40,65 @@ def get_accuracy(model, test_x, test_y):
 
 def main():
     print("Loading data..")
-    train_x = np.array(np.load('data/train_x.npy'))
-    train_y = np.array(np.load('data/train_y.npy'))
-    # train_x = np.array(np.load('data/training_x.npy'))
-    # train_y = np.array(np.load('data/training_y.npy'))
-    print("train_x:", train_x.shape)
-    print("train_y:", train_y.shape)
-    test_x = np.array(np.load('data/test_x.npy'))
-    test_y = np.array(np.load('data/test_y.npy'))
+    # Create numpy arrays from pandas dataframe
+    dataset = pd.read_csv("data/fer2013.csv")
+    train_x = []
+    train_y = []
+    test_x = []
+    test_y = []
+    i = 0
+    for rows in dataset.pixels:
+        if dataset.Usage[i] == "Training":
+            train_x.append(np.fromstring(rows, dtype=int, sep=' '))
+            train_y.append(dataset.emotion[i])
+        else:
+            test_x.append(np.fromstring(rows, dtype=int, sep=' '))
+            test_y.append(dataset.emotion[i])
+        i += 1
+    train_x = np.array(train_x)
+    train_y = np.array(train_y)
+    test_x = np.array(test_x)
+    test_y = np.array(test_y)
+    print(f"train_x: {train_x.shape}")
+    print(f"test_x: {test_x.shape}")
 
-    # train_80_x, val_20_x, train_80_y, val_20_y = train_test_split(train_x,
-    #                                                               train_y,
-    #                                                               test_size=0.2,
-    #                                                               random_state=42)
-    # Pre-processing data
+    train_x, val_x, train_y, val_y = train_test_split(train_x,
+                                                      train_y,
+                                                      test_size=0.25,
+                                                      random_state=42)
+    print(f"val_x: {val_x.shape}")
     le = preprocessing.LabelEncoder()
     le.fit(train_y)
     train_labels_encoded = le.transform(train_y)
+    le.fit(val_y)
+    val_labels_encoded = le.transform(val_y)
     le.fit(test_y)
     test_labels_encoded = le.transform(test_y)
-
-    train_y, test_y = train_labels_encoded, test_labels_encoded
+    train_y, val_y, test_y = train_labels_encoded, val_labels_encoded, test_labels_encoded
 
     train_pool = Pool(
         data=train_x, label=train_y,
         cat_features=None, weight=None,
         thread_count=-1
     )
-    # train_80_pool = Pool(
-    #     data=train_80_x, label=train_80_y,
-    #     cat_features=None, weight=None,
-    #     thread_count=-1
-    # )
-    # val_20_pool = Pool(
-    #     data=val_20_x, label=val_20_y,
-    #     cat_features=None, weight=None,
-    #     thread_count=-1
-    # )
+    val_pool = Pool(
+        data=val_x, label=val_y,
+        cat_features=None, weight=None,
+        thread_count=-1
+    )
+
+    model = CatBoostClassifier(
+        iterations=1000,
+        # learning_rate=1,
+        # depth=12,
+        # od_type='IncToDec',
+        # od_pval=.001,
+        task_type='GPU',
+        verbose=False
+    )
+    model.fit(train_pool, eval_set=val_pool)
+    print(model.get_evals_result())
+    print(model.score(val_pool))
 
     # simple_model = CatBoostClassifier(
     #     iterations=9000,
@@ -101,38 +124,21 @@ def main():
     #     verbose=10
     # )
 
-    # Catboost cv
-    # params = {
-    #     'loss_function': 'MultiClass',
-    #     'iterations': 8000,
-    #     'task_type': 'GPU'
-    #
-    # }
-    # # print("Training model...")
-    # model = cv(
-    #     params=params,
-    #     pool=train_pool,
-    #     fold_count=5,
-    #     shuffle=True,
-    #     partition_random_seed=0,
-    #     verbose=100
-    # )
-
     # SKlearn GridSearchCV
-    params = {
-        'iterations': [2000],
-        'depth': [6, 8, 10]
-    }
-    model = GridSearchCV(CatBoostClassifier(
-        task_type='GPU',
-        od_type='IncToDec',
-        od_pval=.0001,
-        verbose=500),
-        params)
-    model.fit(train_x, train_y)
-    print(f"Best estimator: {model.best_params_})")
-    print(f"Score: {model.best_score_}")
-    print("Test score:", model.score(test_x, test_y))
+    # params = {
+    #     'iterations': [2000],
+    #     'depth': [6, 8, 10]
+    # }
+    # model = GridSearchCV(CatBoostClassifier(
+    #     task_type='GPU',
+    #     od_type='IncToDec',
+    #     od_pval=.0001,
+    #     verbose=500),
+    #     params)
+    # model.fit(train_x, train_y)
+    # print(f"Best estimator: {model.best_params_})")
+    # print(f"Score: {model.best_score_}")
+    # print("Test score:", model.score(test_x, test_y))
 
     # uncomment to save model
     # model.save_model("model_v3.cbm")
