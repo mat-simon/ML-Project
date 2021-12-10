@@ -17,15 +17,20 @@ def main():
                                                         random_state=42)
     print(f"test_x: {test_x.shape}")
     # split train further into train and validate
-    train_x, val_x, train_y, val_y = train_test_split(train_x,
-                                                      train_y,
-                                                      test_size=0.25,
-                                                      random_state=0)
+    train_80_x, val_x, train_80_y, val_y = train_test_split(train_x,
+                                                            train_y,
+                                                            test_size=0.25,
+                                                            random_state=0)
     print(f"train_x: {train_x.shape}")
     print(f"val_x: {val_x.shape}")
 
     train_pool = Pool(
         data=train_x, label=train_y,
+        cat_features=None, weight=None,
+        thread_count=-1
+    )
+    train_80_pool = Pool(
+        data=train_80_x, label=train_80_y,
         cat_features=None, weight=None,
         thread_count=-1
     )
@@ -45,17 +50,16 @@ def main():
     #     task_type='GPU',
     #     verbose=100
     # )
-    # model.fit(train_pool, eval_set=val_pool)
+    # model.fit(train_80_pool, eval_set=val_pool)
     # print(f"model params: {model.get_params()}")
     # # print(model.get_evals_result())
     # print(f"val R^2: {model.score(val_pool)}")
     # # print(f"feature importances: {model.feature_importances_}")
 
-
     # SKlearn gridcv
     params = {
-        'iterations': [400],
-        'learning_rate': [.1],
+        'iterations': [425, 450],
+        'learning_rate': [.1, .15],
         'depth': [12]
     }
     cat = CatBoostRegressor(
@@ -68,7 +72,7 @@ def main():
     print(f"Best params: {model.best_params_})")
     print(f"model.best_score_: {model.best_score_}")
     print(f"model.score(test_x, test_y): {model.score(test_x, test_y)}")
-    print(f"feature importance: {cat.feature_importances_}")
+    # print(f"feature importance: {cat.get_feature_importance()}")
 
 
 if __name__ == '__main__':
