@@ -25,19 +25,6 @@ def generate_metrics(model, test_x, test_y):
     plt.savefig('confusion_matrix.png')
 
 
-def get_accuracy(model, test_x, test_y):
-    expected_y = test_y
-    predicted_y = predicted_y = model.predict(test_x).reshape(5757, )
-
-    i = 0
-    hit = 0
-    for prediction in predicted_y:
-        if prediction == expected_y[i]:
-            hit += 1
-        i += 1
-    return (hit / i) * 100
-
-
 def main():
     print("Loading data..")
     # Create numpy arrays from pandas dataframe

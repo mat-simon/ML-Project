@@ -1,11 +1,63 @@
 import scipy.io
 import numpy as np
 import xgboost as xgb
+from sklearn import preprocessing
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 
 def main():
-    train, test = get_data('MNIST.mat')
+    print("Loading data...")
+    dictionary_data = scipy.io.loadmat('MNIST.mat')
+    train_x = np.array(dictionary_data['train_fea'])
+    train_y = np.array(dictionary_data['train_gnd'])
+    test_x = np.array(dictionary_data['test_fea'])
+    test_y = np.array(dictionary_data['test_gnd'])
+    train_80x, val_x, train_80y, val_y = train_test_split(train_x,
+                                                          train_y,
+                                                          test_size=0.2,
+                                                          random_state=0)
+    print(f"train_x: {train_x.shape}")
+    print(f"test_x: {test_x.shape}")
+    # replace label "10" from Matlab with label of 0
+    for i in range(len(train_y)):
+        if train_y[i] == 10:
+            train_y[i] = 0
+    for i in range(len(test_y)):
+        if test_y[i] == 10:
+            test_y[i] = 0
+    train = xgb.DMatrix(train_x, train_y)
+    train_80x = xgb.DMatrix(train_80x, train_80y)
+    test = xgb.DMatrix(test_x, test_y)
+
+    # # encode labels
+    # le = preprocessing.LabelEncoder()
+    # le.fit(train_y)
+    # train_labels_encoded = le.transform(train_y)
+    # le.fit(val_y)
+    # val_labels_encoded = le.transform(val_y)
+    # le.fit(test_y)
+    # test_labels_encoded = le.transform(test_y)
+    # train_y, val_y, test_y = train_labels_encoded, val_labels_encoded, test_labels_encoded
+    #
+    #
+    # # Default params
+    # # for i in range(0, 1000):
+    # train_acc = []
+    # val_acc = []
+    # params = {
+    #     'num_class': 10,
+    #     'gpu_id': 0,
+    #     'tree_method': 'gpu_hist',
+    #     'verbose': 100
+    # }
+    # model = xgb.XGBClassifier(params, train, n_estimators=1000)
+    # model.fit(train_80x, train_80y.ravel())
+    # print(model.get_params)
+    # print(accuracy_score(test_y, model.predict(test)))
+    #
+
 
     params = {'num_class': 10, 'max_depth': 5, 'eta': .3, 'objective': 'multi:softmax', 'gpu_id': 0,
               'tree_method': 'gpu_hist'}
@@ -22,9 +74,9 @@ def main():
     best_params = None
     for eta in [.3]:
         print("CV with eta={}".format(eta))
-        # We update our parameters
+        # update params
         params['eta'] = eta
-        # Run and time CV
+        # Run CV
         cv_results = xgb.cv(
             params,
             train,
@@ -32,36 +84,17 @@ def main():
             seed=8,
             nfold=5,
             metrics=['merror'],
-            early_stopping_rounds=10
-        )  # Update best score
+            early_stopping_rounds=10,
+            verbose_eval=10
+        )
+        # Update best score
         mean_merror = min(cv_results['test-merror-mean'])
-        boost_rounds = cv_results['test-merror-mean'].index(mean_merror)
+        boost_rounds = cv_results['test-merror-mean'].argmin()
         print("\tmerror {} for {} rounds\n".format(mean_merror, boost_rounds))
         if mean_merror < min_merror:
             min_merror = mean_merror
             best_params = eta
             print("Best params: {}, merror: {}".format(best_params, min_merror))
-
-def get_data(file):
-    print("Loading data...")
-    dictionary_data = scipy.io.loadmat(file)
-    train_X = np.array(dictionary_data['train_fea'])
-    train_Y = np.array(dictionary_data['train_gnd'])
-    test_X = np.array(dictionary_data['test_fea'])
-    test_Y = np.array(dictionary_data['test_gnd'])
-
-    # replace label "10" from Matlab with label of 0
-    for i in range(len(train_Y)):
-        if train_Y[i] == 10:
-            train_Y[i] = 0
-    for i in range(len(test_Y)):
-        if test_Y[i] == 10:
-            test_Y[i] = 0
-
-    dtrain = xgb.DMatrix(train_X, train_Y)
-    dtest = xgb.DMatrix(test_X, test_Y)
-
-    return dtrain, dtest
 
 
 if __name__ == '__main__':

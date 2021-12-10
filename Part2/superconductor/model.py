@@ -41,17 +41,18 @@ def main():
     )
 
     model = CatBoostRegressor(
-        iterations=1000,
+        iterations=100000,
         # learning_rate=1,
         # depth=12,
-        # od_type='IncToDec',
-        # od_pval=.001,
+        od_type='IncToDec',
+        od_pval=.001,
         task_type='GPU',
-        verbose=False
+        verbose=100
     )
     model.fit(train_pool, eval_set=val_pool)
     print(model.get_evals_result())
     print(model.score(val_pool))
+    print("")
 
     #
     # # SKlearn gridcv
