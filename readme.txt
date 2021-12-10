@@ -8,4 +8,4 @@ Differentiate (4 vs 8) using scikit-learn logistic regression and random forest.
 Part 2:
 Full MNIST classification using XGBoost/CatBoost
 Classify emotions of facial images using XGBoost/CatBoost
-Regression of superconductor critical temperatures using XGBoost/Catboost
+Regression of superconductor critical temperatures using XGBoost/CatBoost
