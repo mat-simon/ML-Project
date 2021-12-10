@@ -1,12 +1,7 @@
 from catboost import CatBoostRegressor, Pool
-from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
-from sklearn import preprocessing
-import numpy as np
 from numpy import genfromtxt
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 
 def main():
@@ -40,36 +35,40 @@ def main():
         thread_count=-1
     )
 
-    model = CatBoostRegressor(
-        iterations=100000,
-        # learning_rate=1,
-        # depth=12,
-        od_type='IncToDec',
-        od_pval=.001,
+    # model = CatBoostRegressor(
+    #     iterations=10000,
+    #     # learning_rate=1,
+    #     # depth=12,
+    #     od_type='IncToDec',
+    #     od_pval=.001,
+    #     l2_leaf_reg=3,
+    #     task_type='GPU',
+    #     verbose=100
+    # )
+    # model.fit(train_pool, eval_set=val_pool)
+    # print(f"model params: {model.get_params()}")
+    # # print(model.get_evals_result())
+    # print(f"val R^2: {model.score(val_pool)}")
+    # # print(f"feature importances: {model.feature_importances_}")
+
+
+    # SKlearn gridcv
+    params = {
+        'iterations': [400],
+        'learning_rate': [.1],
+        'depth': [12]
+    }
+    cat = CatBoostRegressor(
+        l2_leaf_reg=3,
         task_type='GPU',
         verbose=100
     )
-    model.fit(train_pool, eval_set=val_pool)
-    print(model.get_evals_result())
-    print(model.score(val_pool))
-    print("")
-
-    #
-    # # SKlearn gridcv
-    # params = {
-    #     'iterations': [390, 400, 410],
-    #     'learning_rate': [.14, .15, .16],
-    #     'depth': [12]
-    # }
-    # model = GridSearchCV(CatBoostRegressor(
-    #     task_type='GPU',
-    #     verbose=False
-    # ), params, verbose=True)
-    # model.fit(train_x, train_y)
-    # print(f"Best estimator: {model.best_params_})")
-    # print("mean y of train", train_y.average())
-    # print(f"RMSE: {model.best_score_}")
-    # print("Test score:", model.score(test_x, test_y))
+    model = GridSearchCV(cat, params, verbose=True)
+    model.fit(train_x, train_y)
+    print(f"Best params: {model.best_params_})")
+    print(f"model.best_score_: {model.best_score_}")
+    print(f"model.score(test_x, test_y): {model.score(test_x, test_y)}")
+    print(f"feature importance: {cat.feature_importances_}")
 
 
 if __name__ == '__main__':
