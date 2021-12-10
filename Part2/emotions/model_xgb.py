@@ -46,13 +46,14 @@ def main():
     train_y = np.array(train_y)
     test_x = np.array(test_x)
     test_y = np.array(test_y)
-    print(f"train_x: {train_x.shape}")
+    print(f"full_x: {train_x.shape}")
     print(f"test_x: {test_x.shape}")
 
     train_x, val_x, train_y, val_y = train_test_split(train_x,
                                                       train_y,
                                                       test_size=0.25,
                                                       random_state=42)
+    print(f"train_x: {train_x.shape}")
     print(f"val_x: {val_x.shape}")
     le = preprocessing.LabelEncoder()
     le.fit(train_y)
@@ -74,18 +75,18 @@ def main():
         thread_count=-1
     )
 
-    model = CatBoostClassifier(
-        iterations=1000,
-        # learning_rate=1,
-        # depth=12,
-        # od_type='IncToDec',
-        # od_pval=.001,
-        task_type='GPU',
-        verbose=False
-    )
-    model.fit(train_pool, eval_set=val_pool)
-    print(model.get_evals_result())
-    print(model.score(val_pool))
+    # model = CatBoostClassifier(
+    #     iterations=1000,
+    #     # learning_rate=1,
+    #     # depth=12,
+    #     # od_type='IncToDec',
+    #     # od_pval=.001,
+    #     task_type='GPU',
+    #     verbose=False
+    # )
+    # model.fit(train_pool, eval_set=val_pool)
+    # print(model.get_evals_result())
+    # print(model.score(val_pool))
 
     # simple_model = CatBoostClassifier(
     #     iterations=9000,
@@ -112,20 +113,21 @@ def main():
     # )
 
     # SKlearn GridSearchCV
-    # params = {
-    #     'iterations': [2000],
-    #     'depth': [6, 8, 10]
-    # }
-    # model = GridSearchCV(CatBoostClassifier(
-    #     task_type='GPU',
-    #     od_type='IncToDec',
-    #     od_pval=.0001,
-    #     verbose=500),
-    #     params)
-    # model.fit(train_x, train_y)
-    # print(f"Best estimator: {model.best_params_})")
-    # print(f"Score: {model.best_score_}")
-    # print("Test score:", model.score(test_x, test_y))
+    params = {
+        'iterations': [2000],
+        'depth': [6, 8, 10]
+    }
+    model = GridSearchCV(CatBoostClassifier(
+        task_type='GPU',
+        od_type='IncToDec',
+        learning_rate=.15,
+        od_pval=.0001,
+        verbose=500),
+        params)
+    model.fit(train_x, train_y)
+    print(f"Best estimator: {model.best_params_})")
+    print(f"Score: {model.best_score_}")
+    print("Test score:", model.score(test_x, test_y))
 
     # uncomment to save model
     # model.save_model("model_v3.cbm")

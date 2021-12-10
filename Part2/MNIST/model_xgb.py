@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 def main():
     print("Loading data...")
-    dictionary_data = scipy.io.loadmat('MNIST.mat')
+    dictionary_data = scipy.io.loadmat('data/MNIST.mat')
     train_x = np.array(dictionary_data['train_fea'])
     train_y = np.array(dictionary_data['train_gnd'])
     test_x = np.array(dictionary_data['test_fea'])
@@ -84,7 +84,7 @@ def main():
             seed=8,
             nfold=5,
             metrics=['merror'],
-            early_stopping_rounds=10,
+            early_stopping_rounds=50,
             verbose_eval=10
         )
         # Update best score
