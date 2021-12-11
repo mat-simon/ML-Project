@@ -31,9 +31,20 @@ def main():
     train_80x = xgb.DMatrix(train_80x, train_80y)
     test = xgb.DMatrix(test_x, test_y)
 
-    params = {'num_class': 10, 'max_depth': 2, 'eta': .4, 'objective': 'multi:softmax', 'gpu_id': 0,
+    params = {'num_class': 10,
+              'max_depth': 2,
+              'eta': .4,
+              'eval_metric': 'merror',
+              'objective': 'multi:softmax',
+              'gpu_id': 0,
               'tree_method': 'gpu_hist'}
-    num_round = 5000
+
+    model = xgb.train(params, train, 50)
+    print("train error:", 1 - accuracy_score(train_y, model.predict(train)))
+    print("test error:", 1 - accuracy_score(test_y, model.predict(test)))
+
+
+
     #params['max_depth'] = 5
     #params['min_child_weight'] = 1
 
@@ -42,33 +53,33 @@ def main():
     #     for max_depth in range(3, 12)
     # ]
 
-    min_merror = float("Inf")
-    best_params = None
-    for eta in [.4]:
-        print("CV with eta={}".format(eta))
-        # update params
-        params['eta'] = eta
-        # Run CV
-        cv_results = xgb.cv(
-            params,
-            train,
-            num_boost_round=num_round,
-            seed=8,
-            nfold=5,
-            metrics=['merror'],
-            early_stopping_rounds=50,
-            verbose_eval=10
-        )
-        # Update best score
-        mean_merror = min(cv_results['test-merror-mean'])
-        boost_rounds = cv_results['test-merror-mean'].argmin()
-        print("\tmerror {} for {} rounds\n".format(mean_merror, boost_rounds))
-        if mean_merror < min_merror:
-            min_merror = mean_merror
-            best_params = eta
-            print("Best params: {}, merror: {}".format(best_params, min_merror))
-
-        cv_results.save_model("model_leNet5", format="cbm")
+    # min_merror = float("Inf")
+    # best_params = None
+    # for eta in [.4]:
+    #     print("CV with eta={}".format(eta))
+    #     # update params
+    #     params['eta'] = eta
+    #     # Run CV
+    #     cv_results = xgb.cv(
+    #         params,
+    #         train,
+    #         num_boost_round=num_round,
+    #         seed=8,
+    #         nfold=5,
+    #         metrics=['merror'],
+    #         early_stopping_rounds=50,
+    #         verbose_eval=10
+    #     )
+    #     # Update best score
+    #     mean_merror = min(cv_results['test-merror-mean'])
+    #     boost_rounds = cv_results['test-merror-mean'].argmin()
+    #     print("\tmerror {} for {} rounds\n".format(mean_merror, boost_rounds))
+    #     if mean_merror < min_merror:
+    #         min_merror = mean_merror
+    #         best_params = eta
+    #         print("Best params: {}, merror: {}".format(best_params, min_merror))
+    #
+    #     cv_results.save_model("model_leNet5", format="cbm")
 
 
 if __name__ == '__main__':
