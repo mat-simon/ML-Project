@@ -58,7 +58,7 @@ def main():
 
     # SKlearn gridcv
     params = {
-        'iterations': [425, 450],
+        'iterations': [400, 450],
         'learning_rate': [.1, .15],
         'depth': [12]
     }
@@ -70,8 +70,10 @@ def main():
     model = GridSearchCV(cat, params, verbose=True)
     model.fit(train_x, train_y)
     print(f"Best params: {model.best_params_})")
-    print(f"model.best_score_: {model.best_score_}")
-    print(f"model.score(test_x, test_y): {model.score(test_x, test_y)}")
+    print(f"R2: {model.best_score_}")
+    print(f"model.RMSE: {model.error_score}")
+    print(f"test R2: {model.score(test_x, test_y)}")
+    print(f"evals_result: {cat.get_evals_result()}")
     # print(f"feature importance: {cat.get_feature_importance()}")
 
 

@@ -31,70 +31,62 @@ def main():
     train_80x = xgb.DMatrix(train_80x, train_80y)
     test = xgb.DMatrix(test_x, test_y)
 
-    # # encode labels
-    # le = preprocessing.LabelEncoder()
-    # le.fit(train_y)
-    # train_labels_encoded = le.transform(train_y)
-    # le.fit(val_y)
-    # val_labels_encoded = le.transform(val_y)
-    # le.fit(test_y)
-    # test_labels_encoded = le.transform(test_y)
-    # train_y, val_y, test_y = train_labels_encoded, val_labels_encoded, test_labels_encoded
-    #
     #
     # # Default params
     # # for i in range(0, 1000):
     # train_acc = []
     # val_acc = []
-    # params = {
-    #     'num_class': 10,
-    #     'gpu_id': 0,
-    #     'tree_method': 'gpu_hist',
-    #     'verbose': 100
-    # }
-    # model = xgb.XGBClassifier(params, train, n_estimators=1000)
-    # model.fit(train_80x, train_80y.ravel())
-    # print(model.get_params)
-    # print(accuracy_score(test_y, model.predict(test)))
-    #
 
+    params = {
+        'objective': 'multi:softmax',
+        'num_class': 10,
+        'max_depth': 5,
+        'eval_metric': 'merror',
+        'eta': .3,
+        'gpu_id': 0,
+        'tree_method': 'gpu_hist'
+    }
 
-    params = {'num_class': 10, 'max_depth': 5, 'eta': .3, 'objective': 'multi:softmax', 'gpu_id': 0,
-              'tree_method': 'gpu_hist'}
-    num_round = 5000
-    params['max_depth'] = 5
-    params['min_child_weight'] = 1
+    model = xgb.train(params, train, 200)
+    print("train error", 1-accuracy_score(train_y, model.predict(train)))
+    print("test error:", 1-accuracy_score(test_y, model.predict(test)))
+
+    # params = {'num_class': 10, 'max_depth': 5, 'eta': .3, 'objective': 'multi:softmax', 'gpu_id': 0,
+    #           'tree_method': 'gpu_hist'}
+    # num_round = 5000
+    # params['max_depth'] = 5
+    # params['min_child_weight'] = 1
 
     # grid = [
     #     (max_depth)
     #     for max_depth in range(3, 12)
     # ]
 
-    min_merror = float("Inf")
-    best_params = None
-    for eta in [.3]:
-        print("CV with eta={}".format(eta))
-        # update params
-        params['eta'] = eta
-        # Run CV
-        cv_results = xgb.cv(
-            params,
-            train,
-            num_boost_round=num_round,
-            seed=8,
-            nfold=5,
-            metrics=['merror'],
-            early_stopping_rounds=50,
-            verbose_eval=10
-        )
-        # Update best score
-        mean_merror = min(cv_results['test-merror-mean'])
-        boost_rounds = cv_results['test-merror-mean'].argmin()
-        print("\tmerror {} for {} rounds\n".format(mean_merror, boost_rounds))
-        if mean_merror < min_merror:
-            min_merror = mean_merror
-            best_params = eta
-            print("Best params: {}, merror: {}".format(best_params, min_merror))
+    # min_merror = float("Inf")
+    # best_params = None
+    # for eta in [.3]:
+    #     print("CV with eta={}".format(eta))
+    #     # update params
+    #     params['eta'] = eta
+    #     # Run CV
+    #     cv_results = xgb.cv(
+    #         params,
+    #         train,
+    #         num_boost_round=num_round,
+    #         seed=8,
+    #         nfold=5,
+    #         metrics=['merror'],
+    #         early_stopping_rounds=50,
+    #         verbose_eval=10
+    #     )
+    #     # Update best score
+    #     mean_merror = min(cv_results['test-merror-mean'])
+    #     boost_rounds = cv_results['test-merror-mean'].argmin()
+    #     print("\tmerror {} for {} rounds\n".format(mean_merror, boost_rounds))
+    #     if mean_merror < min_merror:
+    #         min_merror = mean_merror
+    #         best_params = eta
+    #         print("Best params: {}, merror: {}".format(best_params, min_merror))
 
 
 if __name__ == '__main__':
