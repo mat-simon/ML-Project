@@ -2,10 +2,12 @@ from catboost import CatBoostClassifier, Pool
 import numpy as np
 import pandas as pd
 from sklearn import metrics
+from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn import preprocessing
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
 
 
 def generate_metrics(model, test_x, test_y):
@@ -64,33 +66,80 @@ def main():
     test_labels_encoded = le.transform(test_y)
     train_y, val_y, test_y = train_labels_encoded, val_labels_encoded, test_labels_encoded
 
-    train_pool = Pool(
+    # train_pool = Pool(
+    #     data=train_x, label=train_y,
+    #     cat_features=None, weight=None,
+    #     thread_count=-1
+    # )
+    # val_pool = Pool(
+    #     data=val_x, label=val_y,
+    #     cat_features=None, weight=None,
+    #     thread_count=-1
+    # )
+    # test_pool = Pool(
+    #     data=test_x, label=test_y,
+    #     cat_features=None, weight=None,
+    #     thread_count=-1
+    # )
+
+    # model = CatBoostClassifier(
+    #     iterations=1,
+    #     # learning_rate=.05,
+    #     # custom_metric=['Accuracy'],
+    #     depth=8,
+    #     od_type='IncToDec',
+    #     od_pval=.00001,
+    #     # l2_leaf_reg=.09,
+    #     # task_type='GPU',
+    #     verbose=100
+    # )
+    # model.fit(train_pool, eval_set=val_pool)
+    # print(model.get_params())
+    # generate_metrics(model, val_x, val_y)
+    # model.save_model("best_model", format='cbm')
+    # print(model.get_evals_result())
+    # print(model.score(val_pool))
+
+
+    ### PCA
+    scalar = StandardScaler()
+    train_scaled = scalar.fit_transform(train_x)
+    test_scaled = scalar.transform(test_x)
+
+    print("applying PCA...")
+    pca = PCA(n_components=.95)
+    fit = pca.fit_transform(train_scaled, axis=1)
+    print(f"components: {pca.components_.shape}")
+    # print(f"explained variance: {pca.explained_variance_}")
+    print("splitting...")
+    train_x, val_x, train_y, val_y = train_test_split(fit, train_y, random_state=42)
+
+    print("creating pools...")
+    train_scaled_pool = Pool(
         data=train_x, label=train_y,
         cat_features=None, weight=None,
         thread_count=-1
     )
-    val_pool = Pool(
+    val_scaled_pool = Pool(
         data=val_x, label=val_y,
         cat_features=None, weight=None,
         thread_count=-1
     )
 
     model = CatBoostClassifier(
-        iterations=10000,
-        learning_rate=.15,
+        iterations=1000,
+        learning_rate=.05,
         depth=8,
-        od_type='IncToDec',
-        od_pval=.0001,
-        l2_leaf_reg=.1,
+        # od_type='IncToDec',
+        # od_pval=.00001,
+        l2_leaf_reg=.09,
         task_type='GPU',
-        verbose=100
+        verbose=10
     )
-    model.fit(train_pool, eval_set=val_pool)
-    print(model.get_params())
+    print("fitting model...")
+    model.fit(train_scaled_pool, eval_set=val_scaled_pool)
     generate_metrics(model, val_x, val_y)
-    model.save_model("best_model", format='cbm')
-    # print(model.get_evals_result())
-    # print(model.score(val_pool))
+
 
     # simple_model = CatBoostClassifier(
     #     iterations=9000,

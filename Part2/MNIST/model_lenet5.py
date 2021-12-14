@@ -39,7 +39,7 @@ def main():
               'gpu_id': 0,
               'tree_method': 'gpu_hist'}
 
-    model = xgb.train(params, train, 50)
+    model = xgb.train(params, train, 558)
     print("train error:", 1 - accuracy_score(train_y, model.predict(train)))
     print("test error:", 1 - accuracy_score(test_y, model.predict(test)))
 

@@ -40,41 +40,42 @@ def main():
         thread_count=-1
     )
 
-    # model = CatBoostRegressor(
-    #     iterations=10000,
-    #     # learning_rate=1,
-    #     # depth=12,
-    #     od_type='IncToDec',
-    #     od_pval=.001,
-    #     l2_leaf_reg=3,
-    #     task_type='GPU',
-    #     verbose=100
-    # )
-    # model.fit(train_80_pool, eval_set=val_pool)
-    # print(f"model params: {model.get_params()}")
-    # # print(model.get_evals_result())
-    # print(f"val R^2: {model.score(val_pool)}")
-    # # print(f"feature importances: {model.feature_importances_}")
-
-    # SKlearn gridcv
-    params = {
-        'iterations': [400, 450],
-        'learning_rate': [.1, .15],
-        'depth': [12]
-    }
-    cat = CatBoostRegressor(
+    model = CatBoostRegressor(
+        iterations=10000,
+        # learning_rate=1,
+        # depth=12,
+        od_type='IncToDec',
+        od_pval=.001,
         l2_leaf_reg=3,
         task_type='GPU',
         verbose=100
     )
-    model = GridSearchCV(cat, params, verbose=True)
-    model.fit(train_x, train_y)
-    print(f"Best params: {model.best_params_})")
-    print(f"R2: {model.best_score_}")
-    print(f"model.RMSE: {model.error_score}")
-    print(f"test R2: {model.score(test_x, test_y)}")
-    print(f"evals_result: {cat.get_evals_result()}")
-    # print(f"feature importance: {cat.get_feature_importance()}")
+    model.fit(train_80_pool, eval_set=val_pool)
+    print(f"model params: {model.get_params()}")
+    # print(model.get_evals_result())
+    print(f"val R^2: {model.score(val_pool)}")
+
+    fs = FeatureSelector()
+
+    # # SKlearn gridcv
+    # params = {
+    #     'iterations': [400, 450],
+    #     'learning_rate': [.1, .15],
+    #     'depth': [12]
+    # }
+    # cat = CatBoostRegressor(
+    #     l2_leaf_reg=3,
+    #     task_type='GPU',
+    #     verbose=100
+    # )
+    # model = GridSearchCV(cat, params, verbose=True)
+    # model.fit(train_x, train_y)
+    # print(f"Best params: {model.best_params_})")
+    # print(f"R2: {model.best_score_}")
+    # print(f"model.RMSE: {model.error_score}")
+    # print(f"test R2: {model.score(test_x, test_y)}")
+    # print(f"evals_result: {cat.get_evals_result()}")
+    # # print(f"feature importance: {cat.get_feature_importance()}")
 
 
 if __name__ == '__main__':
