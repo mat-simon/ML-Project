@@ -108,9 +108,8 @@ def main():
 
     print("applying PCA...")
     pca = PCA(n_components=.95)
-    fit = pca.fit_transform(train_scaled, axis=1)
+    fit = pca.fit_transform(train_scaled)
     print(f"components: {pca.components_.shape}")
-    # print(f"explained variance: {pca.explained_variance_}")
     print("splitting...")
     train_x, val_x, train_y, val_y = train_test_split(fit, train_y, random_state=42)
 
@@ -133,8 +132,8 @@ def main():
         # od_type='IncToDec',
         # od_pval=.00001,
         l2_leaf_reg=.09,
-        task_type='GPU',
-        verbose=10
+        # task_type='GPU',
+        verbose=100
     )
     print("fitting model...")
     model.fit(train_scaled_pool, eval_set=val_scaled_pool)

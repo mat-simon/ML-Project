@@ -2,12 +2,20 @@ from catboost import CatBoostRegressor, Pool
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 from numpy import genfromtxt
+import csv
 
 
 def main():
     csv_np = genfromtxt('data/train.csv', delimiter=',')
     full_x = csv_np[1:, :-1]
     full_y = csv_np[1:, -1]
+
+    file = open('data/train.csv')
+    type(file)
+    csvreader = csv.reader(file)
+    features = next(csvreader)
+    print(features)
+
     print(f"full_x: {full_x.shape}")
 
     # split data into train and test
@@ -41,27 +49,28 @@ def main():
     )
 
     model = CatBoostRegressor(
-        iterations=10000,
-        # learning_rate=1,
-        # depth=12,
-        od_type='IncToDec',
-        od_pval=.001,
+        iterations=450,
+        learning_rate=.1,
+        depth=12,
+        # od_type='IncToDec',
+        # od_pval=.001,
         l2_leaf_reg=3,
         task_type='GPU',
-        verbose=100
+        verbose=50
     )
     model.fit(train_80_pool, eval_set=val_pool)
     print(f"model params: {model.get_params()}")
     # print(model.get_evals_result())
     print(f"val R^2: {model.score(val_pool)}")
 
-    fs = FeatureSelector()
+    print(f"feature size: {model.get_feature_importance().shape}")
+    print(f"features: {model.get_feature_importance()}")
 
     # # SKlearn gridcv
     # params = {
     #     'iterations': [400, 450],
-    #     'learning_rate': [.1, .15],
-    #     'depth': [12]
+    #     'learning_rate': [.15],
+    #     'depth': [5]
     # }
     # cat = CatBoostRegressor(
     #     l2_leaf_reg=3,

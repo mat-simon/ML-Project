@@ -1,9 +1,8 @@
 import numpy as np
 import xgboost as xgb
 from numpy import genfromtxt
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, r2_score, mean_squared_error
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 
 
 def main():
@@ -38,9 +37,8 @@ def main():
 
     params = {
         'objective': 'multi:softmax',
-        'num_class': 10,
         'max_depth': 5,
-        'eval_metric': 'merror',
+        'eval_metric': 'rmse',
         'eta': .3,
         'gpu_id': 0,
         'tree_method': 'gpu_hist'
@@ -48,7 +46,7 @@ def main():
 
     model = xgb.train(params, train, 350)
     print("train error", 1-accuracy_score(train_y, model.predict(train)))
-    print("test error:", 1-accuracy_score(test_y, model.predict(test)))
+    print("test error:", 1-accuracy_score(val_y, model.predict(val)))
 
     # params = {'num_class': 10, 'max_depth': 5, 'eta': .3, 'objective': 'multi:softmax', 'gpu_id': 0,
     #           'tree_method': 'gpu_hist'}
